@@ -1,0 +1,17 @@
+SWIFT_FILES=$(git diff --staged --name-only --diff-filter=drtuxb --line-prefix=`git rev-parse --show-toplevel`/ | grep ".*\.swift$")
+
+if [[ $SWIFT_FILES ]];
+then
+    echo "Linting..."
+    LINTING_OUTPUT=$(swiftformat --lint $SWIFT_FILES 2>&1 | grep 'warning\|error')
+    if [[ $LINTING_OUTPUT ]];
+    then
+        echo "Failed. Commit cancelled."; 
+        echo "$LINTING_OUTPUT"; 
+        exit 1;
+    fi
+
+    echo "All good.";
+else
+    echo "No staged .swift files. Skip linting.";
+fi

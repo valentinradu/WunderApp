@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="82px" height="16px" viewBox="0 0 82 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>surf</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Welcome" transform="translate(-61.000000, -234.000000)">
+            <g id="surf" transform="translate(63.000000, 234.465649)">
+                <path d="M0,11.5248396 C45.4781682,11.5248396 69.3836792,11.5248396 71.7165329,11.5248396 C74.0493865,11.5248396 76.1438756,11.858173 78,12.5248396" id="Path-3" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"></path>
+                <path d="M6.4158728,10.5248396 L6.4158728,2.79379324 C6.4158728,2.24150849 6.86358805,1.79379324 7.4158728,1.79379324 C7.71520176,1.79379324 7.99879053,1.92788057 8.18873637,2.15922102 L15.0574637,10.5248396 L15.0574637,10.5248396 L6.4158728,10.5248396 Z" id="Path-4" fill="#FFFFFF"></path>
+            </g>
+        </g>
+    </g>
+</svg>

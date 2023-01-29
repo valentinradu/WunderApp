@@ -1,0 +1,89 @@
+// swiftlint:disable all
+{% if catalogs %}
+{% set forceNamespaces %}{{param.forceProvidesNamespaces|default:"false"}}{% endset %}
+{% set accessModifier %}{% if param.publicAccess %}public{% else %}internal{% endif %}{% endset %}
+import SwiftUI
+
+{% macro casesBlock assets type name prefix %}
+  {% for asset in assets %}
+  {% if asset.type == type %}
+  static var {% if prefix %}{{prefix}}{% endif %}{{asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} : {{name}} { {{name}}("{{asset.value}}", bundle: BundleToken.bundle) }
+  {% elif asset.items and ( forceNamespaces == "true" or asset.isNamespaced == "true" ) %}
+    {% set prefixed_asset %}{% if prefix == "" %}{{asset.name|lowerFirstWord|swiftIdentifier:"pretty"}}_{% else %}{{prefix}}{{asset.name|lowerFirstWord|swiftIdentifier:"pretty"}}_{% endif %}{% endset %}
+    {% call casesBlock asset.items type name prefixed_asset %}
+  {% elif asset.items %}
+  {% call casesBlock asset.items type name prefix %}
+  {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{{accessModifier}} extension Color {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "color" "Color" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "color" "Color" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "color" "Color" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "color" "Color" "" %}{% endif %}
+  {% endif %}
+}
+
+{{accessModifier}} extension UIColor {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "color" "Color" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "color" "Color" "" %}{% endif %}
+  {% endif %}
+}
+
+{{accessModifier}} extension Image {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "image" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "image" "Image" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "image" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "image" "Image" "" %}{% endif %}
+  {% endif %}
+}
+
+{{accessModifier}} extension Image {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "symbol" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "symbol" "Image" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "symbol" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "symbol" "Image" "" %}{% endif %}
+  {% endif %}
+}
+
+{% if resourceCount.image > 0 %}
+{% endif %}
+private final class BundleToken {
+  static let bundle: Bundle = {
+    #if SWIFT_PACKAGE
+    return Bundle.module
+    #else
+    return Bundle(for: BundleToken.self)
+    #endif
+  }()
+}
+{% else %}
+// No assets found
+{% endif %}

@@ -1,0 +1,118 @@
+// swiftlint:disable all
+{% if tables.count > 0 %}
+import SwiftUI
+
+{% macro parametersBlock types %}{% filter removeNewlines:"leading" %}
+  {% for type in types %}
+    {% if type == "String" %}
+    _ p{{forloop.counter}}: Any
+    {% else %}
+    _ p{{forloop.counter}}: {{type}}
+    {% endif %}
+    {{ ", " if not forloop.last }}
+  {% endfor %}
+{% endfilter %}{% endmacro %}
+{% macro argumentsBlock types %}{% filter removeNewlines:"leading" %}
+  {% for type in types %}
+    {% if type == "String" %}
+    String(describing: p{{forloop.counter}})
+    {% elif type == "UnsafeRawPointer" %}
+    Int(bitPattern: p{{forloop.counter}})
+    {% else %}
+    p{{forloop.counter}}
+    {% endif %}
+    {{ ", " if not forloop.last }}
+  {% endfor %}
+{% endfilter %}{% endmacro %}
+{% macro recursiveBlock table item className %}
+  {% for string in item.strings %}
+  {% if not param.noComments %}
+  /// {{string.translation}}
+  {% endif %}
+  {% if string.types %}
+  public static func {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}}({% call parametersBlock string.types %}) -> {{className}} {
+    return {{className}}(key: "{{string.key}}", {% call argumentsBlock string.types %})
+  }
+  {% else %}
+  public static let {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} = {{className}}(key: "{{string.key}}")
+  {% endif %}
+  {% endfor %}
+  {% for child in item.children %}
+  public enum {{child.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
+    {% filter indent:2 %}{% call recursiveBlock table child className %}{% endfilter %}
+  }
+  {% endfor %}
+{% endmacro %}
+extension AttributedString {
+  {% if tables.count > 1 or param.forceFileNameEnum %}
+  {% for table in tables %}
+  public enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
+    {% filter indent:2 %}{% call recursiveBlock table.name table.levels "AttributedString" %}{% endfilter %}
+  }
+  {% endfor %}
+  {% else %}
+  {% call recursiveBlock tables.first.name tables.first.levels "AttributedString" %}
+  {% endif %}
+}
+
+extension String {
+  {% if tables.count > 1 or param.forceFileNameEnum %}
+  {% for table in tables %}
+  public enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
+    {% filter indent:2 %}{% call recursiveBlock table.name table.levels "String" %}{% endfilter %}
+  }
+  {% endfor %}
+  {% else %}
+  {% call recursiveBlock tables.first.name tables.first.levels "String" %}
+  {% endif %}
+}
+
+// MARK: - Implementation Details
+
+private extension AttributedString {
+    init(key: String, _ args: CVarArg...) {
+        let format = BundleToken.bundle.localizedString(forKey: key,
+                                                        value: nil,
+                                                        table: "Localizable")
+        let formattedValue = String(format: format,
+                                    locale: Locale.current,
+                                    arguments: args)
+
+        do {
+            let options = AttributedString.MarkdownParsingOptions(allowsExtendedAttributes: true,
+                                                                  interpretedSyntax: .full,
+                                                                  failurePolicy: .throwError)
+            try self.init(markdown: formattedValue,
+                          options: options)
+        } catch {
+            assertionFailure(error.localizedDescription)
+            self.init(formattedValue)
+        }
+    }
+}
+
+public extension String {
+  fileprivate init(key: String, _ args: CVarArg...) {
+    let format = BundleToken.bundle.localizedString(forKey: key,
+                                                    value: nil,
+                                                    table: "Localizable")
+    self.init(format: format,
+              locale: Locale.current,
+              arguments: args)
+  }
+}
+{% if not param.bundle %}
+
+private final class BundleToken {
+  static let bundle: Bundle = {
+    #if SWIFT_PACKAGE
+      return Bundle.module
+    #else
+      return Bundle(for: BundleToken.self)
+    #endif
+  }()
+}
+{% endif %}
+{% else %}
+// No string found
+{% endif %}
