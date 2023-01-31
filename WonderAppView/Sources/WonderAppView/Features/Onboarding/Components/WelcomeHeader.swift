@@ -101,7 +101,7 @@ private final class WelcomeAnimation: ObservableObject {
         let cloudsX = width * (1 - cloudsProgress)
         let vanX = 0.35 * width
         let vanYVariance = cos(2 * .pi * vanProgress + .pi) * 3
-        let surfYVariance = cos(2 * .pi * vanProgress + .pi) * 2
+        let surfYVariance = cos(2 * .pi * vanProgress + .pi) * 4
         let vanY = height - floor.height - wheelSymbol.size.height / 2
 
         context.draw(cloudsSymbol,
@@ -157,7 +157,7 @@ private final class WelcomeAnimation: ObservableObject {
 }
 
 struct WelcomeHeader: View {
-    @StateObject private var _animation = WelcomeAnimation(duration: 4)
+    @StateObject private var _animation = WelcomeAnimation(duration: 6)
     @State private var _vanOffset: CGSize = .zero
     @State private var _isDragging: Bool = false
 
@@ -170,18 +170,18 @@ struct WelcomeHeader: View {
                                       size: size)
                 },
                 symbols: {
-                    Image.rock.tag(WelcomeAnimation.Element.rock)
+                    Image.ds.rock.tag(WelcomeAnimation.Element.rock)
                     _van
-                    Image.tree.tag(WelcomeAnimation.Element.tree)
-                    Image.clouds.tag(WelcomeAnimation.Element.clouds)
+                    Image.ds.tree.tag(WelcomeAnimation.Element.tree)
+                    Image.ds.clouds.tag(WelcomeAnimation.Element.clouds)
                     _pickMeUp
                 }
             )
+            .frame(greedy: .both)
         }
-        .frame(height: 400)
+        .frame(height: 300)
         .frame(maxWidth: .infinity)
-        .background(Color.bigBlueBackground)
-        .edgesIgnoringSafeArea(.all)
+        .background(Color.ds.oceanBlue900.edgesIgnoringSafeArea(.all))
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -207,11 +207,11 @@ struct WelcomeHeader: View {
     @ViewBuilder
     private var _van: some View {
         Group {
-            Image.surf
+            Image.ds.surf
                 .tag(WelcomeAnimation.Element.surf)
-            Image.wheel
+            Image.ds.wheel
                 .tag(WelcomeAnimation.Element.wheel)
-            Image.van
+            Image.ds.van
                 .tag(WelcomeAnimation.Element.van)
         }
         .offset(_vanOffset)
@@ -224,14 +224,14 @@ struct WelcomeHeader: View {
 
     @ViewBuilder
     private var _pickMeUp: some View {
-        Image.pickMeUp
+        Image.ds.pickMeUp
             .tag(WelcomeAnimation.Element.pickMeUp)
             .opacity(_vanOffset.height != 0 ? 0 : 1)
             .animation(.easeInOut, value: _vanOffset)
     }
 }
 
-struct WelcomeHeader_Previews: PreviewProvider {
+struct WelcomeHeaderPreviews: PreviewProvider {
     static var previews: some View {
         VStack {
             WelcomeHeader()

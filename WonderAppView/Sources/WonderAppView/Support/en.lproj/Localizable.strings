@@ -1,1 +1,6 @@
-"HELLO_WORLD" = "Hello World";
+"welcomeLandingGreeting" = "Hello! • ¡Hola! • Salut! • Hallo • Ciao!";
+"welcomeLandingCallout" = "Let's get started!";
+"welcomeLandingInfoFirst" = "We have more than ^[500](color: 'ocean-green-600') caravans, motorhomes and camper vans waiting to take you on the perfect road trip!";
+"welcomeLandingInfoSecond" = "We have more than ^[500](color: 'ocean-green-600') caravans, motorhomes and camper vans waiting to take you on the perfect road trip!";
+"welcomeLandingInfoThird" = "We have more than ^[500](color: 'ocean-green-600') caravans, motorhomes and camper vans waiting to take you on the perfect road trip!";
+"welcomeContinue" = "Continue";

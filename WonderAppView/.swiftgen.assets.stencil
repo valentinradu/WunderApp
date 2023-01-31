@@ -3,11 +3,12 @@
 {% set forceNamespaces %}{{param.forceProvidesNamespaces|default:"false"}}{% endset %}
 {% set accessModifier %}{% if param.publicAccess %}public{% else %}internal{% endif %}{% endset %}
 import SwiftUI
+import UIKit
 
 {% macro casesBlock assets type name prefix %}
   {% for asset in assets %}
   {% if asset.type == type %}
-  static var {% if prefix %}{{prefix}}{% endif %}{{asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} : {{name}} { {{name}}("{{asset.value}}", bundle: BundleToken.bundle) }
+  let {% if prefix %}{{prefix}}{% endif %}{{asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} : {{name}} = {{name}}("{{asset.value}}", bundle: BundleToken.bundle) 
   {% elif asset.items and ( forceNamespaces == "true" or asset.isNamespaced == "true" ) %}
     {% set prefixed_asset %}{% if prefix == "" %}{{asset.name|lowerFirstWord|swiftIdentifier:"pretty"}}_{% else %}{{prefix}}{{asset.name|lowerFirstWord|swiftIdentifier:"pretty"}}_{% endif %}{% endset %}
     {% call casesBlock asset.items type name prefixed_asset %}
@@ -17,7 +18,7 @@ import SwiftUI
   {% endfor %}
 {% endmacro %}
 
-{{accessModifier}} extension Color {
+struct DesignSystemColor {
   {% if catalogs.count > 1 %}
   {% for catalog in catalogs %}
   // {{catalog.name}}.xcassets
@@ -31,21 +32,11 @@ import SwiftUI
   {% endif %}
 }
 
-{{accessModifier}} extension UIColor {
-  {% if catalogs.count > 1 %}
-  {% for catalog in catalogs %}
-  // {{catalog.name}}.xcassets
-    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
-    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "color" "Color" "" %}{% endif %}
-  {% endfor %}
-  {% else %}
-  // {{catalogs.first.name}}.xcassets
-  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
-  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "color" "Color" "" %}{% endif %}
-  {% endif %}
+{{accessModifier}} extension Color {
+  static let ds: DesignSystemColor = .init()
 }
 
-{{accessModifier}} extension Image {
+struct DesignSystemImage {
   {% if catalogs.count > 1 %}
   {% for catalog in catalogs %}
   // {{catalog.name}}.xcassets
@@ -57,9 +48,7 @@ import SwiftUI
   {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
   {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "image" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "image" "Image" "" %}{% endif %}
   {% endif %}
-}
 
-{{accessModifier}} extension Image {
   {% if catalogs.count > 1 %}
   {% for catalog in catalogs %}
   // {{catalog.name}}.xcassets
@@ -71,6 +60,10 @@ import SwiftUI
   {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
   {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "symbol" "Image" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "symbol" "Image" "" %}{% endif %}
   {% endif %}
+}
+
+{{accessModifier}} extension Image {
+  static let ds: DesignSystemImage = .init()
 }
 
 {% if resourceCount.image > 0 %}

@@ -30,11 +30,11 @@ import SwiftUI
   /// {{string.translation}}
   {% endif %}
   {% if string.types %}
-  public static func {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}}({% call parametersBlock string.types %}) -> {{className}} {
+  public func {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}}({% call parametersBlock string.types %}) -> {{className}} {
     return {{className}}(key: "{{string.key}}", {% call argumentsBlock string.types %})
   }
   {% else %}
-  public static let {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} = {{className}}(key: "{{string.key}}")
+  public let {{string.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords}} = {{className}}(key: "{{string.key}}")
   {% endif %}
   {% endfor %}
   {% for child in item.children %}
@@ -43,19 +43,24 @@ import SwiftUI
   }
   {% endfor %}
 {% endmacro %}
+
 extension AttributedString {
-  {% if tables.count > 1 or param.forceFileNameEnum %}
-  {% for table in tables %}
-  public enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
-    {% filter indent:2 %}{% call recursiveBlock table.name table.levels "AttributedString" %}{% endfilter %}
-  }
-  {% endfor %}
-  {% else %}
-  {% call recursiveBlock tables.first.name tables.first.levels "AttributedString" %}
-  {% endif %}
+  static let l10n: L10nAttributedString = .init()
 }
 
-extension String {
+struct L10nAttributedString {
+  {% if tables.count > 1 or param.forceFileNameEnum %}
+    {% for table in tables %}
+    public enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
+      {% filter indent:2 %}{% call recursiveBlock table.name table.levels "AttributedString" %}{% endfilter %}
+    }
+    {% endfor %}
+    {% else %}
+    {% call recursiveBlock tables.first.name tables.first.levels "AttributedString" %}
+    {% endif %}
+}
+
+struct L10nString {
   {% if tables.count > 1 or param.forceFileNameEnum %}
   {% for table in tables %}
   public enum {{table.name|swiftIdentifier:"pretty"|escapeReservedKeywords}} {
@@ -67,7 +72,30 @@ extension String {
   {% endif %}
 }
 
+extension String {
+  static let l10n: L10nString = .init()
+}
+
 // MARK: - Implementation Details
+
+enum ColorAttribute: CodableAttributedStringKey, MarkdownDecodableAttributedStringKey {
+  typealias Value = String
+  static var name: String = "color"
+}
+
+extension AttributeScopes {
+    struct ColorAttributeScope: AttributeScope {
+        let color: ColorAttribute
+    }
+    
+    var color: ColorAttributeScope.Type { ColorAttributeScope.self }
+}
+
+extension AttributeDynamicLookup {
+    subscript<T: AttributedStringKey>(dynamicMember keyPath: KeyPath<AttributeScopes.ColorAttributeScope, T>) -> T {
+        self[T.self]
+    }
+}
 
 private extension AttributedString {
     init(key: String, _ args: CVarArg...) {
@@ -82,8 +110,16 @@ private extension AttributedString {
             let options = AttributedString.MarkdownParsingOptions(allowsExtendedAttributes: true,
                                                                   interpretedSyntax: .full,
                                                                   failurePolicy: .throwError)
-            try self.init(markdown: formattedValue,
-                          options: options)
+            var value = try AttributedString(markdown: formattedValue,
+                                             including: \.color,
+                                             options: options)
+
+            for run in value.runs {
+                guard let colorAssetName = run.color else { continue }
+                value[run.range].foregroundColor = Color(colorAssetName, bundle: BundleToken.bundle)
+            }
+            
+            self = value
         } catch {
             assertionFailure(error.localizedDescription)
             self.init(formattedValue)

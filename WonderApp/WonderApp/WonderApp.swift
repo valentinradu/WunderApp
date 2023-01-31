@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import WonderAppView
 
 @main
 struct WonderApp: App {
     var body: some Scene {
-        WindowGroup {}
+        WindowGroup {
+            WonderAppRootView()
+        }
     }
 }
