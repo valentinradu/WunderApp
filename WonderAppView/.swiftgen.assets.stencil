@@ -36,6 +36,27 @@ struct DesignSystemColor {
   static let ds: DesignSystemColor = .init()
 }
 
+struct DesignSystemUIColor {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "color" "UIColor" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "color" "UIColor" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "color" "UIColor" "" %}{% endif %}
+  {% endif %}
+}
+
+{{accessModifier}} extension UIColor {
+  static let ds: DesignSystemUIColor = .init()
+  convenience init(_ name: String, bundle: Bundle) {
+    self.init(named: name, in: bundle, compatibleWith: nil)!
+  }
+}
+
 struct DesignSystemImage {
   {% if catalogs.count > 1 %}
   {% for catalog in catalogs %}
@@ -62,8 +83,29 @@ struct DesignSystemImage {
   {% endif %}
 }
 
+struct DesignSystemUIImage {
+  {% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  // {{catalog.name}}.xcassets
+    {% set prefixed_catalog %}{{catalog.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+    {% if forceNamespaces == "true" %} {% call casesBlock catalog.assets "image" "UIImage" prefixed_catalog %}{% else %}{% call casesBlock catalog.assets "image" "UIImage" "" %}{% endif %}
+  {% endfor %}
+  {% else %}
+  // {{catalogs.first.name}}.xcassets
+  {% set prefixed_catalog %}{{catalogs.first.name|swiftIdentifier:"pretty"|lowerFirstWord}}_{% endset %}
+  {% if forceNamespaces == "true" %} {% call casesBlock catalogs.first.assets "image" "UIImage" prefixed_catalog %}{% else %}{% call casesBlock catalogs.first.assets "image" "UIImage" "" %}{% endif %}
+  {% endif %}
+}
+
 {{accessModifier}} extension Image {
   static let ds: DesignSystemImage = .init()
+}
+
+{{accessModifier}} extension UIImage {
+  static let ds: DesignSystemUIImage = .init()
+  convenience init(_ name: String, bundle: Bundle) {
+    self.init(named: name, in: bundle, with: nil)!
+  }
 }
 
 {% if resourceCount.image > 0 %}

@@ -6,228 +6,208 @@
 //
 
 import SFSafeSymbols
+import SpriteKit
 import SwiftUI
 
-extension GraphicsContext {
-    func fill(roundedRect rect: CGRect,
-              cornerRadius: CGFloat,
-              with: Shading,
-              style: FillStyle = FillStyle()) {
-        fill(
-            Path(roundedRect: rect, cornerRadius: cornerRadius),
-            with: with,
-            style: style
-        )
+private final class WelcomeScene: SKScene {
+    enum Category {
+        static let none: UInt32 = 0
+        static let all: UInt32 = .max
+        static let wheel: UInt32 = 0b1000
+        static let van: UInt32 = 0b0100
+        static let floor: UInt32 = 0b0010
+        static let rock: UInt32 = 0b0001
     }
 
-    func fill(rect: CGRect,
-              with: Shading,
-              style: FillStyle = FillStyle()) {
-        fill(
-            Path(CGPath(rect: rect, transform: nil)),
-            with: with,
-            style: style
-        )
-    }
-}
+    var duration: TimeInterval = 3
+    var touchOrigin: CGPoint = .zero
 
-extension TimeInterval {
-    func rotate(upperBound: Self = 1) -> Self {
-        if self < 0 {
-            return (upperBound + self).rotate(upperBound: upperBound)
-        } else {
-            return self
+    override func didMove(to view: SKView) {
+        physicsBody = SKPhysicsBody(edgeFrom: CGPoint(x: 0, y: 0),
+                                    to: CGPoint(x: size.width, y: 0))
+        physicsBody?.categoryBitMask = Category.floor
+
+        let floorSize = CGSize(width: size.width, height: 3)
+        let floor = SKSpriteNode(color: .ds.white, size: floorSize)
+        floor.anchorPoint = .zero
+
+        addChild(floor)
+
+        let rock = SKSpriteNode(texture: SKTexture(image: .ds.rock))
+        let rockPhysicsBody = SKPhysicsBody(texture: rock.texture!, size: rock.texture!.size())
+        rockPhysicsBody.affectedByGravity = false
+        rockPhysicsBody.isDynamic = false
+        rockPhysicsBody.categoryBitMask = Category.rock
+        rock.position.x = 0.7 * size.width
+        rock.position.y = rock.size.height / 2
+        rock.physicsBody = rockPhysicsBody
+        rock.run(
+            .repeatForever(
+                .sequence(
+                    [
+                        .moveTo(x: -rock.size.width, duration: duration * 0.7),
+                        .moveTo(x: size.width, duration: 0),
+                        .moveTo(x: size.width * 0.7, duration: duration * 0.3),
+                    ]
+                )
+            )
+        )
+        addChild(rock)
+
+        let van = SKSpriteNode(texture: SKTexture(image: .ds.van))
+        let vanPhysicsBody = SKPhysicsBody(texture: van.texture!, size: van.texture!.size())
+        vanPhysicsBody.categoryBitMask = Category.van
+        vanPhysicsBody.collisionBitMask = Category.none
+        vanPhysicsBody.restitution = 5
+        vanPhysicsBody.angularDamping = 10
+        van.physicsBody = vanPhysicsBody
+        van.position.x = size.width * 0.15 + van.size.width / 2
+        van.position.y = van.size.height / 2 + 10
+        van.name = "van"
+        van.constraints = [
+            SKConstraint.positionX(.init(constantValue: van.position.x)),
+            SKConstraint.positionY(.init(lowerLimit: van.size.height / 2 + 10))
+        ]
+        addChild(van)
+
+        let surf = SKSpriteNode(texture: SKTexture(image: .ds.surf))
+        let surfPhysicsBody = SKPhysicsBody(rectangleOf: surf.size, center: surf.position)
+        surfPhysicsBody.collisionBitMask = Category.van
+        surf.position.x = van.position.x
+        surf.position.y = van.frame.maxY + surf.size.height / 2 + 3
+        surf.physicsBody = surfPhysicsBody
+        surf.constraints = [
+            SKConstraint.positionX(.init(constantValue: surf.position.x)),
+            SKConstraint.positionY(.init(lowerLimit: surf.position.y))
+        ]
+        addChild(surf)
+
+        let surfPinJoint = SKPhysicsJointPin.joint(withBodyA: vanPhysicsBody,
+                                                   bodyB: surfPhysicsBody,
+                                                   anchor: surf.position)
+        physicsWorld.add(surfPinJoint)
+
+        let tree = SKSpriteNode(texture: SKTexture(image: .ds.tree))
+        tree.anchorPoint = .zero
+        tree.zPosition = -1
+        tree.position.x = 0.55 * size.width
+        tree.run(
+            .repeatForever(
+                .sequence(
+                    [
+                        .moveTo(x: -tree.size.width, duration: duration * 1),
+                        .moveTo(x: size.width, duration: 0),
+                        .moveTo(x: size.width * 0.55, duration: duration * 0.7),
+                    ]
+                )
+            )
+        )
+        addChild(tree)
+
+        let sky = SKSpriteNode()
+        let cloudsTexture = SKTexture(image: .ds.clouds)
+        let cloudsTextureWidth = cloudsTexture.size().width
+        sky.zPosition = -2
+        sky.position.y = size.height * 0.35
+        sky.position.x = -200
+        sky.run(
+            .repeatForever(
+                .sequence(
+                    [
+                        .moveTo(x: sky.position.x - cloudsTextureWidth - 80, duration: duration * 2.5),
+                        .moveTo(x: sky.position.x, duration: 0)
+                    ]
+                )
+            )
+        )
+
+        for i in 0 ..< 3 {
+            let clouds = SKSpriteNode(texture: cloudsTexture)
+            clouds.anchorPoint = .zero
+            clouds.position.x = CGFloat(i) * (clouds.size.width + 80)
+            sky.addChild(clouds)
+        }
+
+        addChild(sky)
+
+        let pickMeUp = SKSpriteNode(texture: SKTexture(image: .ds.pickMeUp))
+        pickMeUp.anchorPoint = .zero
+        pickMeUp.position.y = van.frame.maxY + 30
+        pickMeUp.position.x = van.frame.maxX
+
+        addChild(pickMeUp)
+
+        let wheelTexture = SKTexture(image: .ds.wheel)
+        let frontWheelX = van.frame.maxX - wheelTexture.size().width / 2 - 5
+        let backWheelX = van.frame.minX + wheelTexture.size().width / 2 + 20
+        let wheels = [frontWheelX, backWheelX].enumerated().map { i, x in
+            let wheel = SKSpriteNode(texture: wheelTexture)
+            let wheelPhysicsBody = SKPhysicsBody(circleOfRadius: wheel.size.width / 2,
+                                                 center: wheel.position)
+            wheelPhysicsBody.categoryBitMask = Category.wheel
+            wheelPhysicsBody.collisionBitMask = Category.floor | Category.rock
+            wheelPhysicsBody.allowsRotation = false
+            wheel.physicsBody = wheelPhysicsBody
+            wheel.position.x = x
+            wheel.position.y = 10
+            wheel.constraints = [
+                SKConstraint.positionX(.init(constantValue: wheel.position.x)),
+                SKConstraint.positionY(.init(lowerLimit: 0))
+            ]
+
+            return wheel
+        }
+
+        for wheel in wheels {
+            addChild(wheel)
+
+            let wheelPinJoint = SKPhysicsJointPin.joint(withBodyA: wheel.physicsBody!,
+                                                        bodyB: vanPhysicsBody,
+                                                        anchor: wheel.position)
+            physicsWorld.add(wheelPinJoint)
         }
     }
-}
 
-private final class WelcomeAnimation: ObservableObject {
-    enum Element {
-        case rock
-        case van
-        case tree
-        case wheel
-        case clouds
-        case pickMeUp
-        case surf
-    }
-
-    private let _referenceDate: Date = .now
-    private var _vanFreezeTime: Date?
-    private let _referenceDuration: TimeInterval
-
-    init(duration: TimeInterval) {
-        _referenceDuration = duration
-        _vanFreezeTime = nil
-    }
-
-    func progress(date: Date, speed: Double) -> Double {
-        let relativeDuration = _referenceDuration / speed
-        return _referenceDate.distance(to: date).truncatingRemainder(dividingBy: relativeDuration) / relativeDuration
-    }
-
-    func update(in context: GraphicsContext,
-                date: Date,
-                size: CGSize) {
-        let width = size.width
-        let height = size.height
-        let floor = CGRect(x: 0,
-                           y: size.height - 3,
-                           width: size.width,
-                           height: 3)
-
-        guard let rockSymbol = context.resolveSymbol(id: Element.rock),
-              let treeSymbol = context.resolveSymbol(id: Element.tree),
-              let cloudsSymbol = context.resolveSymbol(id: Element.clouds),
-              let vanSymbol = context.resolveSymbol(id: Element.van),
-              let wheelSymbol = context.resolveSymbol(id: Element.wheel),
-              let pickMeUpSymbol = context.resolveSymbol(id: Element.pickMeUp),
-              let surfSymbol = context.resolveSymbol(id: Element.surf)
-        else {
-            #if DEBUG
-                context.draw(Image(systemSymbol: .nosign),
-                             at: CGPoint(x: size.width / 2, y: size.height / 2),
-                             anchor: .center)
-            #endif
-            return
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first,
+           let van = childNode(withName: "van") {
+            let location = touch.location(in: self)
+            touchOrigin = location
+            van.physicsBody?.isDynamic = false
         }
-
-        let rockProgress = progress(date: date, speed: 2)
-        let treeProgress = progress(date: date, speed: 1)
-        let cloudsProgress = progress(date: date, speed: 0.25)
-        let vanProgress = progress(date: _vanFreezeTime ?? date, speed: 10)
-        let rockX = (width + rockSymbol.size.width) * (0.7 - rockProgress).rotate()
-        let treeX = (width + treeSymbol.size.width) * (0.9 - treeProgress).rotate()
-        let cloudsX = width * (1 - cloudsProgress)
-        let vanX = 0.35 * width
-        let vanYVariance = cos(2 * .pi * vanProgress + .pi) * 3
-        let surfYVariance = cos(2 * .pi * vanProgress + .pi) * 4
-        let vanY = height - floor.height - wheelSymbol.size.height / 2
-
-        context.draw(cloudsSymbol,
-                     at: .init(x: cloudsX, y: height - 80),
-                     anchor: .bottomTrailing)
-
-        context.draw(cloudsSymbol,
-                     at: .init(
-                         x: cloudsX + width,
-                         y: height - 80
-                     ),
-                     anchor: .bottomTrailing)
-
-        context.draw(treeSymbol,
-                     at: .init(x: treeX, y: height),
-                     anchor: .bottomTrailing)
-
-        context.draw(vanSymbol,
-                     at: .init(x: vanX, y: vanY + vanYVariance),
-                     anchor: .bottomTrailing)
-
-        context.draw(surfSymbol,
-                     at: .init(x: vanX - 10, y: vanY + surfYVariance - vanSymbol.size.height),
-                     anchor: .bottomTrailing)
-
-        context.draw(wheelSymbol,
-                     at: .init(x: vanX - 7, y: vanY + wheelSymbol.size.height / 2),
-                     anchor: .bottomTrailing)
-
-        context.draw(wheelSymbol,
-                     at: .init(x: vanX - vanSymbol.size.width + 20, y: vanY + wheelSymbol.size.height / 2),
-                     anchor: .bottomLeading)
-
-        context.fill(rect: floor,
-                     with: .color(.white))
-
-        context.draw(rockSymbol,
-                     at: .init(x: rockX, y: height),
-                     anchor: .bottomTrailing)
-
-        context.draw(pickMeUpSymbol,
-                     at: .init(x: vanX + vanSymbol.size.width, y: height - 100),
-                     anchor: .bottomTrailing)
     }
 
-    func freezeVan() {
-        _vanFreezeTime = .now
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first, let van = childNode(withName: "van") {
+            let location = touch.location(in: self)
+            let newPosition = CGPoint(x: location.x, y: location.y)
+            van.position = newPosition
+        }
     }
 
-    func unfreezeVan() {
-        _vanFreezeTime = nil
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let van = childNode(withName: "van") {
+            van.physicsBody?.isDynamic = true
+        }
     }
 }
 
 struct WelcomeHeader: View {
-    @StateObject private var _animation = WelcomeAnimation(duration: 6)
-    @State private var _vanOffset: CGSize = .zero
-    @State private var _isDragging: Bool = false
-
     var body: some View {
-        TimelineView(.animation) { timeline in
-            Canvas(
-                renderer: { context, size in
-                    _animation.update(in: context,
-                                      date: timeline.date,
-                                      size: size)
-                },
-                symbols: {
-                    Image.ds.rock.tag(WelcomeAnimation.Element.rock)
-                    _van
-                    Image.ds.tree.tag(WelcomeAnimation.Element.tree)
-                    Image.ds.clouds.tag(WelcomeAnimation.Element.clouds)
-                    _pickMeUp
-                }
-            )
-            .frame(greedy: .both)
+        GeometryReader { geo in
+            SpriteView(scene: _scene(bounds: geo.size))
+                .background(Color.ds.oceanBlue900.edgesIgnoringSafeArea(.all))
         }
         .frame(height: 300)
         .frame(maxWidth: .infinity)
-        .background(Color.ds.oceanBlue900.edgesIgnoringSafeArea(.all))
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    if !_isDragging {
-                        _animation.freezeVan()
-                    }
-                    _isDragging = true
-                    _vanOffset = value.translation
-                }
-                .onEnded { value in
-                    _isDragging = false
-                    _vanOffset.height = 0
-                    _animation.unfreezeVan()
-                }
-        )
-        .onChange(of: _vanOffset) { newValue in
-            if newValue.height == 0 {
-                _vanOffset.width = 0
-            }
-        }
     }
 
-    @ViewBuilder
-    private var _van: some View {
-        Group {
-            Image.ds.surf
-                .tag(WelcomeAnimation.Element.surf)
-            Image.ds.wheel
-                .tag(WelcomeAnimation.Element.wheel)
-            Image.ds.van
-                .tag(WelcomeAnimation.Element.van)
-        }
-        .offset(_vanOffset)
-        .animation(
-            .easeInOut(duration: _isDragging ? 0.25 : 1).delay(_isDragging ? 0 : 0.25),
-            value: _vanOffset.width
-        )
-        .animation(.easeInOut, value: _vanOffset.height)
-    }
-
-    @ViewBuilder
-    private var _pickMeUp: some View {
-        Image.ds.pickMeUp
-            .tag(WelcomeAnimation.Element.pickMeUp)
-            .opacity(_vanOffset.height != 0 ? 0 : 1)
-            .animation(.easeInOut, value: _vanOffset)
+    private func _scene(bounds size: CGSize) -> SKScene {
+        let scene = WelcomeScene()
+        scene.size = CGSize(width: size.width, height: size.height)
+        scene.backgroundColor = UIColor.ds.oceanBlue900
+        scene.scaleMode = .resizeFill
+        return scene
     }
 }
 
@@ -237,5 +217,6 @@ struct WelcomeHeaderPreviews: PreviewProvider {
             WelcomeHeader()
             Spacer()
         }
+        .background(Color.ds.oceanBlue900)
     }
 }
