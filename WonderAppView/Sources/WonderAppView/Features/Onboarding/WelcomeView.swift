@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @SceneStorage(.welcomePage) private var _page = 0
+    @SceneStorage(storageKey: .welcomePage) private var _page = 0
     @Environment(\.present) private var _present
 
     var body: some View {
@@ -24,9 +24,11 @@ struct WelcomeView: View {
                         VStack(alignment: .leading) {
                             Text(.l10n.welcomeLandingGreeting)
                                 .font(.ds.lg)
+                                .bold(true)
                                 .foregroundColor(.ds.oceanBlue300)
                             Text(.l10n.welcomeLandingCallout)
                                 .font(.ds.xxl)
+                                .bold(true)
                         }
                         .frame(greedy: .horizontal, alignment: .leading)
                     }
@@ -37,11 +39,12 @@ struct WelcomeView: View {
                             Text(.l10n.welcomeLandingInfoThird).tag(2)
                         }
                         .padding(.horizontal, .ds.s4)
-                        .frame(greedy: .both, alignment: .topLeading)
+                        .frame(greedy: .all, alignment: .topLeading)
                         .foregroundColor(.ds.oceanGreen300)
                     }
                     .ignoresSafeArea()
                     .font(.ds.xl)
+                    .bold(true)
                     .tabViewStyle(.page)
                     .animation(.easeInOut, value: _page)
                     Button {

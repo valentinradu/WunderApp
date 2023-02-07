@@ -19,3 +19,14 @@ extension EnvironmentValues {
         set { self[PresentEnvironmentKey.self] = newValue }
     }
 }
+
+private struct IsLoadingEnvironmentKey: EnvironmentKey {
+    static var defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    var isLoading: Bool {
+        get { self[IsLoadingEnvironmentKey.self] }
+        set { self[IsLoadingEnvironmentKey.self] = newValue }
+    }
+}

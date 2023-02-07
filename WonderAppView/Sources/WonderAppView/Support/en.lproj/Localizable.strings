@@ -4,3 +4,8 @@
 "welcomeLandingInfoSecond" = "We have more than ^[500](color: 'ocean-green-600') caravans, motorhomes and camper vans waiting to take you on the perfect road trip!";
 "welcomeLandingInfoThird" = "We have more than ^[500](color: 'ocean-green-600') caravans, motorhomes and camper vans waiting to take you on the perfect road trip!";
 "welcomeContinue" = "Continue";
+"askEmailContinue" = "Continue";
+"askEmailFollowUp" = "First things first";
+"askEmailQuestion" = "What's your email?";
+"askEmailPlaceholder" = "Enter your email";
+"askEmailGenericError" = "Uhm, this doesn't look like a valid email";

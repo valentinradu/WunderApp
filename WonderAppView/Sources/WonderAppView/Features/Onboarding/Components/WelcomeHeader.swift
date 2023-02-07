@@ -134,6 +134,7 @@ private final class WelcomeScene: SKScene {
         pickMeUp.anchorPoint = .zero
         pickMeUp.position.y = van.frame.maxY + 30
         pickMeUp.position.x = van.frame.maxX
+        pickMeUp.name = "pickMeUp"
 
         addChild(pickMeUp)
 
@@ -170,10 +171,12 @@ private final class WelcomeScene: SKScene {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first,
-           let van = childNode(withName: "van") {
+           let van = childNode(withName: "van"),
+           let pickMeUp = childNode(withName: "pickMeUp") {
             let location = touch.location(in: self)
             touchOrigin = location
             van.physicsBody?.isDynamic = false
+            pickMeUp.run(.fadeOut(withDuration: 0.25))
         }
     }
 
@@ -186,8 +189,10 @@ private final class WelcomeScene: SKScene {
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let van = childNode(withName: "van") {
+        if let van = childNode(withName: "van"),
+           let pickMeUp = childNode(withName: "pickMeUp") {
             van.physicsBody?.isDynamic = true
+            pickMeUp.run(.fadeIn(withDuration: 0.25))
         }
     }
 }

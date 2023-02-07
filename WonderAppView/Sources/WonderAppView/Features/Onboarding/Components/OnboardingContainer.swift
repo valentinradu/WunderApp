@@ -16,11 +16,11 @@ struct OnboardingContainer<C>: View where C: View {
 
     var body: some View {
         _content
-            .buttonStyle(WelcomeButtonStyle())
+            .buttonStyle(OnboardingButtonStyle())
             .multilineTextAlignment(.leading)
-            .frame(greedy: .both)
+            .frame(greedy: .all)
             .background(Color.ds.oceanBlue900)
-            .safeArea(.both, .ds.s4)
+            .safeAreaInset(.all, .ds.s4)
             .foregroundColor(.ds.white)
     }
 }

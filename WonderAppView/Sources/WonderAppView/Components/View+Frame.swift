@@ -22,7 +22,7 @@ private struct GreedyViewModifier: ViewModifier {
             content.frame(maxWidth: .infinity, alignment: _alignment)
         case .vertical:
             content.frame(maxHeight: .infinity, alignment: _alignment)
-        case .both:
+        case .all:
             content.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: _alignment)
         default:
             content
@@ -40,8 +40,8 @@ private struct SafeAreaInsetModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        let horizontally = _axis == .horizontal || _axis == .both
-        let vertically = _axis == .vertical || _axis == .both
+        let horizontally = _axis == .horizontal || _axis == .all
+        let vertically = _axis == .vertical || _axis == .all
         content
             .safeAreaInset(edge: .trailing, spacing: 0) {
                 if horizontally {
@@ -73,11 +73,11 @@ extension View {
 }
 
 extension View {
-    func safeArea(_ axis: Axis.Set, _ length: CGFloat) -> some View {
+    func safeAreaInset(_ axis: Axis.Set, _ length: CGFloat) -> some View {
         modifier(SafeAreaInsetModifier(axis: axis, length: length))
     }
 }
 
 extension Axis.Set {
-    static var both: Axis.Set { [.vertical, .horizontal] }
+    static var all: Axis.Set { [.vertical, .horizontal] }
 }

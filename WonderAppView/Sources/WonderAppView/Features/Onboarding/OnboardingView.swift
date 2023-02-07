@@ -17,7 +17,7 @@ enum OnboardingFragment {
 }
 
 struct OnboardingView: View {
-    @SceneStorage(.onboardingNavigation) private var _path = NavigationPath()
+    @SceneStorage(storageKey: .onboardingNavigation) private var _path = NavigationPath()
 
     var body: some View {
         NavigationStack(path: $_path) {
