@@ -83,12 +83,11 @@ struct OnboardingSecureField<P>: View where P: View {
     }
 
     var body: some View {
-        Group {
-            if _isRevealed {
-                TextField("", text: _secureText)
-            } else {
-                SecureField("", text: _secureText)
-            }
+        ZStack {
+            TextField("", text: _secureText)
+                .opacity(_isRevealed ? 1 : 0)
+            SecureField("", text: _secureText)
+                .opacity(_isRevealed ? 0 : 1)
         }
         .frame(height: .ds.d1)
         .background(alignment: .leading) {
@@ -122,7 +121,7 @@ struct OnboardingTextField<P>: View where P: View {
     }
 }
 
-enum OnboardingFormFieldStatus: Codable {
+enum OnboardingFormFieldStatus: Codable, RawRepresentable {
     case idle
     case loading
     case failure(message: String? = nil)

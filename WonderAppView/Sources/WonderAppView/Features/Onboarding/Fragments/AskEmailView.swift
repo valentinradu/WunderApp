@@ -8,9 +8,14 @@
 import SwiftUI
 
 struct AskEmailView: View {
-    @SceneStorage(storageKey: .onboardingEmail) private var _onboardingEmail = ""
-    @SceneStorage(storageKey: .onboardingEmailStatus) private var _onboardingEmailStatus: OnboardingFormFieldStatus =
-        .idle
+    enum Action {
+        case advance
+    }
+
+    @Environment(\.dispatch) private var _dispatch
+    @FocusState private var _firstResponderFocus
+    @Binding var email: String
+    @Binding var emailStatus: OnboardingFormFieldStatus
 
     var body: some View {
         OnboardingContainer {
@@ -27,22 +32,41 @@ struct AskEmailView: View {
                     }
                     .frame(greedy: .horizontal, alignment: .leading)
                 }
-                OnboardingFormField(text: $_onboardingEmail, status: _onboardingEmailStatus)
+                OnboardingFormField(text: $email,
+                                    status: emailStatus)
+                    .focused($_firstResponderFocus)
+                    .autocorrectionDisabled()
+                    .keyboardType(.emailAddress)
+                    .textInputAutocapitalization(.never)
                 Spacer()
                 Button {
-                    _onContinueTap()
+                    _dispatch(Action.advance)
                 } label: {
                     Text(.l10n.welcomeContinue)
                 }
             }
         }
+        .onSubmit {
+            _dispatch(Action.advance)
+        }
+        .onAppear {
+            _firstResponderFocus = true
+        }
     }
+}
 
-    func _onContinueTap() {}
+struct AskEmailViewSample: View {
+    @State private var _email: String = ""
+    @State private var _emailStatus: OnboardingFormFieldStatus = .idle
+
+    var body: some View {
+        AskEmailView(email: $_email,
+                     emailStatus: $_emailStatus)
+    }
 }
 
 public struct AskEmailViewPreviews: PreviewProvider {
     public static var previews: some View {
-        AskEmailView()
+        AskEmailViewSample()
     }
 }

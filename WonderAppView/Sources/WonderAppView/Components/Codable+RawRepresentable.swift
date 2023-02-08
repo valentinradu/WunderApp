@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-extension OnboardingFormFieldStatus: RawRepresentable {
-    public init?(rawValue: String) {
+public extension RawRepresentable where Self: Codable {
+    init?(rawValue: String) {
         let decoder = JSONDecoder()
         guard let data = rawValue.data(using: .utf8),
               let value = try? decoder.decode(Self.self, from: data)
@@ -18,7 +18,7 @@ extension OnboardingFormFieldStatus: RawRepresentable {
         self = value
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         let encoder = JSONEncoder()
         let data = try? encoder.encode(self)
         assert(data != nil)

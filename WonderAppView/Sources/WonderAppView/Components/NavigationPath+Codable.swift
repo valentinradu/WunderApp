@@ -18,3 +18,5 @@ extension NavigationPath: Codable {
         try container.encode(codable)
     }
 }
+
+extension NavigationPath: RawRepresentable {}

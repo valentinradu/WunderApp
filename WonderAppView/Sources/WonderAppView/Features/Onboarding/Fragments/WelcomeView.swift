@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @SceneStorage(storageKey: .welcomePage) private var _page = 0
-    @Environment(\.present) private var _present
+    enum Action {
+        case advance
+    }
+
+    @Environment(\.dispatch) private var _dispatch
+    @SceneStorage("onboarding.welcome.page") private var _page: Int = 0
 
     var body: some View {
         OnboardingContainer {
@@ -48,8 +52,9 @@ struct WelcomeView: View {
                     .tabViewStyle(.page)
                     .animation(.easeInOut, value: _page)
                     Button {
-                        _onContinueTap()
-                    } label: {
+                        _onContinue()
+                    }
+                    label: {
                         Text(.l10n.welcomeContinue)
                     }
                 }
@@ -57,9 +62,9 @@ struct WelcomeView: View {
         }
     }
 
-    private func _onContinueTap() {
+    private func _onContinue() {
         if _page == 2 {
-            _present(OnboardingFragment.askEmail)
+            _dispatch(Action.advance)
         } else {
             _page += 1
         }

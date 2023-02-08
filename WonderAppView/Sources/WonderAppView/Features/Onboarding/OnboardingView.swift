@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum OnboardingFragment {
+enum OnboardingFragment: Codable, Hashable {
     case welcome
     case askEmail
     case askPassword
@@ -17,7 +17,11 @@ enum OnboardingFragment {
 }
 
 struct OnboardingView: View {
-    @SceneStorage(storageKey: .onboardingNavigation) private var _path = NavigationPath()
+    @SceneStorage("onboarding.path") private var _path: NavigationPath = .init()
+    @SceneStorage("onboarding.email") private var _email: String = ""
+    @SceneStorage("onboarding.emailStatus") private var _emailStatus: OnboardingFormFieldStatus = .idle
+    @SecureStorage("onboarding.password") private var _password: String = ""
+    @SceneStorage("onboarding.passwordStatus") private var _paswordStatus: OnboardingFormFieldStatus = .idle
 
     var body: some View {
         NavigationStack(path: $_path) {
@@ -28,9 +32,11 @@ struct OnboardingView: View {
                         case .welcome:
                             WelcomeView()
                         case .askEmail:
-                            AskEmailView()
+                            AskEmailView(email: $_email,
+                                         emailStatus: $_emailStatus)
                         case .askPassword:
-                            EmptyView()
+                            AskPasswordView(password: $_password,
+                                            passwordStatus: $_paswordStatus)
                         case .createAccount:
                             EmptyView()
                         case .locateUser:
@@ -44,8 +50,25 @@ struct OnboardingView: View {
                     }
                 }
         }
-        .environment(\.present) { fragment in
-            _path.append(fragment)
+        .handle(actions: WelcomeView.Action.self) { action in
+            switch action {
+            case .advance:
+                _path.append(OnboardingFragment.askEmail)
+            }
+        }
+        .handle(actions: AskEmailView.Action.self) { action in
+            switch action {
+            case .advance:
+                _path.append(OnboardingFragment.askPassword)
+            }
+        }
+        .handle(actions: AskPasswordView.Action.self) { action in
+            switch action {
+            case .signUp:
+                break
+            case .logIn:
+                break
+            }
         }
     }
 }

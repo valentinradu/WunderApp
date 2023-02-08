@@ -9,3 +9,9 @@
 "askEmailQuestion" = "What's your email?";
 "askEmailPlaceholder" = "Enter your email";
 "askEmailGenericError" = "Uhm, this doesn't look like a valid email";
+"askPasswordFollowUp" = "Ok, we'll only need your password";
+"askPasswordTitle" = "Welcome back!";
+"askPasswordPlaceholder" = "Enter your password";
+"askEmailGenericError" = "Seems like you've mistyped your password";
+"askPasswordLogIn" = "Log In";
+"askPasswordSignUp" = "I don't have an account yet";
