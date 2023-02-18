@@ -8,60 +8,42 @@
 import SwiftUI
 
 struct AskEmailView: View {
-    enum Action {
-        case advance
-    }
-
-    @Environment(\.dispatch) private var _dispatch
-    @FocusState private var _firstResponderFocus
-    @Binding var email: String
-    @Binding var emailStatus: OnboardingFormFieldStatus
+    @FocusState private var _focus: OnboardingFormFieldName?
+    @Binding var email: OnboardingFormFieldState
+    let canMoveToNextStep: Bool
+    let outlet: Outlet<Void>
 
     var body: some View {
         OnboardingContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
-                VStack(alignment: .leading, spacing: .ds.s4) {
-                    VStack(alignment: .leading) {
-                        Text(.l10n.askEmailFollowUp)
-                            .font(.ds.lg)
-                            .bold(true)
-                            .foregroundColor(.ds.oceanBlue300)
-                        Text(.l10n.askEmailQuestion)
-                            .font(.ds.xxl)
-                            .bold(true)
-                    }
-                    .frame(greedy: .horizontal, alignment: .leading)
-                }
-                OnboardingFormField(text: $email,
-                                    status: emailStatus)
-                    .focused($_firstResponderFocus)
+                OnboardingHeading(prefix: .l10n.askEmailPrefix,
+                                  title: .l10n.askEmailTitle)
+                OnboardingFormField(text: $email.value,
+                                    status: email.status,
+                                    placeholder: .l10n.askEmailPlaceholder)
+                    .focused($_focus, equals: .email)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                 Spacer()
                 Button {
-                    _dispatch(Action.advance)
+                    outlet.fire()
                 } label: {
-                    Text(.l10n.welcomeContinue)
+                    Text(.l10n.askEmailContinue)
                 }
+                .disabled(!canMoveToNextStep)
             }
-        }
-        .onSubmit {
-            _dispatch(Action.advance)
-        }
-        .onAppear {
-            _firstResponderFocus = true
         }
     }
 }
 
 struct AskEmailViewSample: View {
-    @State private var _email: String = ""
-    @State private var _emailStatus: OnboardingFormFieldStatus = .idle
+    @State private var _email: OnboardingFormFieldState = .empty
 
     var body: some View {
         AskEmailView(email: $_email,
-                     emailStatus: $_emailStatus)
+                     canMoveToNextStep: false,
+                     outlet: .inactive())
     }
 }
 

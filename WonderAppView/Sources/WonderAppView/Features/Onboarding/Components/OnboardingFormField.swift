@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct OnboardingTextSecureToggle: View {
+struct OnboardingFormFieldSecureToggle: View {
     @Binding var isRevealed: Bool
 
     var body: some View {
@@ -25,7 +25,7 @@ struct OnboardingTextSecureToggle: View {
     }
 }
 
-struct OnboardingTextStatusIcon: View {
+struct OnboardingFormFieldStatusIcon: View {
     let status: OnboardingFormFieldStatus
     var body: some View {
         Group {
@@ -46,7 +46,35 @@ struct OnboardingTextStatusIcon: View {
     }
 }
 
-struct OnboardingTextStatusLabel: View {
+struct OnboardingFormFieldStatusBorder: View {
+    @FocusState private var _focused
+    let status: OnboardingFormFieldStatus
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 5)
+            .stroke(_color, lineWidth: _lineWidth)
+    }
+
+    private var _color: Color {
+        switch status {
+        case .failure:
+            return .ds.infraRed600
+        default:
+            return _focused ? Color.ds.white : Color.ds.oceanBlue200
+        }
+    }
+
+    private var _lineWidth: CGFloat {
+        switch status {
+        case .failure:
+            return .ds.b1
+        default:
+            return _focused ? .ds.b1 : .ds.bpt
+        }
+    }
+}
+
+struct OnboardingFormFieldStatusLabel: View {
     let status: OnboardingFormFieldStatus
     var body: some View {
         Group {
@@ -128,18 +156,21 @@ enum OnboardingFormFieldStatus: Codable, RawRepresentable {
     case success(message: String? = nil)
 }
 
-struct OnboardingFormField<T, I, U>: View where I: View, U: View, T: View {
+struct OnboardingFormField<T, I, U, O>: View where I: View, U: View, T: View, O: View {
     private let _icon: I
     private let _underline: U
+    private let _overlay: O
     private let _base: T
     @FocusState private var _focused
 
     init(@ViewBuilder wrapping baseBuilder: () -> T,
          @ViewBuilder icon iconBuilder: () -> I,
-         @ViewBuilder underline underlineBuilder: () -> U) {
+         @ViewBuilder underline underlineBuilder: () -> U,
+         @ViewBuilder overlay overlayBuilder: () -> O) {
         _base = baseBuilder()
         _icon = iconBuilder()
         _underline = underlineBuilder()
+        _overlay = overlayBuilder()
     }
 
     var body: some View {
@@ -151,18 +182,14 @@ struct OnboardingFormField<T, I, U>: View where I: View, U: View, T: View {
             }
             .font(.ds.xl)
             .padding(.horizontal, .ds.s3)
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(
-                        _focused ? Color.ds.white : Color.ds.oceanBlue200,
-                        lineWidth: _focused ? .ds.b1 : .ds.dpt
-                    )
-            )
+            .overlay(_overlay)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 _underline
+                    .frame(greedy: .horizontal, alignment: .leading)
             }
             .animation(.easeInOut, value: _focused)
             .foregroundColor(.ds.white)
+            .frame(maxWidth: .ds.d9)
             .onTapGesture {
                 _focused = true
             }
@@ -171,29 +198,33 @@ struct OnboardingFormField<T, I, U>: View where I: View, U: View, T: View {
     init(text: Binding<String>,
          status: OnboardingFormFieldStatus,
          placeholder: AttributedString? = nil)
-        where T == OnboardingTextField<Text?>, I == OnboardingTextStatusIcon, U == OnboardingTextStatusLabel {
-        _icon = OnboardingTextStatusIcon(status: status)
-        _underline = OnboardingTextStatusLabel(status: status)
+        where T == OnboardingTextField<Text?>, I == OnboardingFormFieldStatusIcon, U == OnboardingFormFieldStatusLabel,
+        O == OnboardingFormFieldStatusBorder {
+        _icon = OnboardingFormFieldStatusIcon(status: status)
+        _underline = OnboardingFormFieldStatusLabel(status: status)
         _base = OnboardingTextField(text: text) {
             if let placeholder {
                 Text(placeholder)
             }
         }
+        _overlay = OnboardingFormFieldStatusBorder(status: status)
     }
 
     init(secureText: Binding<String>,
          isRevealed: Binding<Bool>,
          status: OnboardingFormFieldStatus,
          placeholder: AttributedString? = nil)
-        where T == OnboardingSecureField<Text?>, I == OnboardingTextSecureToggle, U == OnboardingTextStatusLabel {
-        _icon = OnboardingTextSecureToggle(isRevealed: isRevealed)
-        _underline = OnboardingTextStatusLabel(status: status)
+        where T == OnboardingSecureField<Text?>, I == OnboardingFormFieldSecureToggle,
+        U == OnboardingFormFieldStatusLabel, O == OnboardingFormFieldStatusBorder {
+        _icon = OnboardingFormFieldSecureToggle(isRevealed: isRevealed)
+        _underline = OnboardingFormFieldStatusLabel(status: status)
         _base = OnboardingSecureField(secureText: secureText,
                                       isRevealed: isRevealed.wrappedValue) {
             if let placeholder {
                 Text(placeholder)
             }
         }
+        _overlay = OnboardingFormFieldStatusBorder(status: status)
     }
 }
 

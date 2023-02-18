@@ -1,5 +1,5 @@
 //
-//  WelcomeHeader.swift
+//  OnboardingAnimation.swift
 //  WonderApp
 //
 //  Created by Valentin Radu on 21/01/2023.
@@ -9,7 +9,7 @@ import SFSafeSymbols
 import SpriteKit
 import SwiftUI
 
-private final class WelcomeScene: SKScene {
+private final class OnboardingAnimationScene: SKScene {
     enum Category {
         static let none: UInt32 = 0
         static let all: UInt32 = .max
@@ -197,7 +197,7 @@ private final class WelcomeScene: SKScene {
     }
 }
 
-struct WelcomeHeader: View {
+struct OnboardingAnimation: View {
     var body: some View {
         GeometryReader { geo in
             SpriteView(scene: _scene(bounds: geo.size))
@@ -208,7 +208,7 @@ struct WelcomeHeader: View {
     }
 
     private func _scene(bounds size: CGSize) -> SKScene {
-        let scene = WelcomeScene()
+        let scene = OnboardingAnimationScene()
         scene.size = CGSize(width: size.width, height: size.height)
         scene.backgroundColor = UIColor.ds.oceanBlue900
         scene.scaleMode = .resizeFill
@@ -216,10 +216,10 @@ struct WelcomeHeader: View {
     }
 }
 
-struct WelcomeHeaderPreviews: PreviewProvider {
+struct OnboardingAnimationPreviews: PreviewProvider {
     static var previews: some View {
         VStack {
-            WelcomeHeader()
+            OnboardingAnimation()
             Spacer()
         }
         .background(Color.ds.oceanBlue900)

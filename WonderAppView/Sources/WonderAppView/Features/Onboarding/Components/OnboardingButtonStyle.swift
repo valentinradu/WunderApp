@@ -29,6 +29,7 @@ struct OnboardingButtonStyle: PrimitiveButtonStyle {
                 .foregroundColor(.ds.white)
                 .padding(.ds.s3)
                 .frame(greedy: .horizontal)
+                .frame(maxWidth: .ds.d7)
                 .overlay(
                     RoundedRectangle(cornerRadius: .infinity)
                         .stroke(Color.ds.white, lineWidth: .ds.b1)
@@ -50,6 +51,7 @@ struct OnboardingButtonStyle: PrimitiveButtonStyle {
                 .foregroundColor(.ds.oceanGreen900)
                 .padding(.ds.s3)
                 .frame(greedy: .horizontal)
+                .frame(maxWidth: .ds.d7)
                 .background(
                     _isEnabled || _isLoading ?
                         Color.ds.oceanGreen600 :

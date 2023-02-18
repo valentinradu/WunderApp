@@ -8,51 +8,35 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    enum Action {
-        case advance
-    }
-
-    @Environment(\.dispatch) private var _dispatch
-    @SceneStorage("onboarding.welcome.page") private var _page: Int = 0
+    @Binding var page: Int
+    let outlet: Outlet<Void>
 
     var body: some View {
         OnboardingContainer {
             VStack(spacing: .ds.s6) {
-                WelcomeHeader()
+                OnboardingAnimation()
                     .edgesIgnoringSafeArea(.horizontal)
                     .overlay(alignment: .topLeading) {
                         Image.ds.logo
                     }
                 VStack(alignment: .center, spacing: .ds.s4) {
-                    VStack(alignment: .leading, spacing: .ds.s4) {
-                        VStack(alignment: .leading) {
-                            Text(.l10n.welcomeLandingGreeting)
-                                .font(.ds.lg)
-                                .bold(true)
-                                .foregroundColor(.ds.oceanBlue300)
-                            Text(.l10n.welcomeLandingCallout)
-                                .font(.ds.xxl)
-                                .bold(true)
-                        }
-                        .frame(greedy: .horizontal, alignment: .leading)
-                    }
-                    TabView(selection: $_page) {
+                    OnboardingHeading(prefix: .l10n.welcomeLandingGreeting,
+                                      title: .l10n.welcomeLandingCallout)
+                    TabView(selection: $page) {
                         Group {
                             Text(.l10n.welcomeLandingInfoFirst).tag(0)
                             Text(.l10n.welcomeLandingInfoSecond).tag(1)
                             Text(.l10n.welcomeLandingInfoThird).tag(2)
                         }
+                        .modifier(OnboardingInfoStyle())
                         .padding(.horizontal, .ds.s4)
                         .frame(greedy: .all, alignment: .topLeading)
-                        .foregroundColor(.ds.oceanGreen300)
                     }
                     .ignoresSafeArea()
-                    .font(.ds.xl)
-                    .bold(true)
                     .tabViewStyle(.page)
-                    .animation(.easeInOut, value: _page)
+                    .animation(.easeInOut, value: page)
                     Button {
-                        _onContinue()
+                        outlet.fire()
                     }
                     label: {
                         Text(.l10n.welcomeContinue)
@@ -61,18 +45,18 @@ struct WelcomeView: View {
             }
         }
     }
+}
 
-    private func _onContinue() {
-        if _page == 2 {
-            _dispatch(Action.advance)
-        } else {
-            _page += 1
-        }
+struct WelcomeViewSample: View {
+    @State private var _page: Int = 0
+
+    var body: some View {
+        WelcomeView(page: $_page, outlet: .inactive())
     }
 }
 
 struct WelcomeViewPreviews: PreviewProvider {
     static var previews: some View {
-        WelcomeView()
+        WelcomeViewSample()
     }
 }

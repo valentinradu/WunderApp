@@ -51,6 +51,8 @@ struct DesignSystemGrid {
     let d9: CGFloat = 400
 
     // Border
+    /// Border 1 point
+    let bpt: CGFloat = 1
     /// Border 2 point
     let b1: CGFloat = 2
 }
