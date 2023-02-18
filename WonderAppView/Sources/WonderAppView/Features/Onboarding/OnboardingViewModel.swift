@@ -7,70 +7,28 @@
 
 import SwiftUI
 
-struct OnboardingViewModel {
-    let model: OnboardingModel
+extension Onboarding {
+    struct ViewModel {
+        let model: Model
 
-    func onAppear(fragment: OnboardingFragment) {}
+        func onAppear(fragment: Fragment) {}
 
-    var askEmailOutlet: Outlet<Void> {
-        .inactive()
-    }
-
-    var askPasswordOutlet: Outlet<AskPasswordControlName> {
-        .inactive()
-    }
-
-    var locateMeOutlet: Outlet<LocateAccountControlName> {
-        .inactive()
-    }
-
-    var welcomeOutlet: Outlet<Void> {
-        Outlet {
-            model.advance(towards: .askEmail)
+        var askEmailOutlet: Outlet<Void> {
+            .inactive()
         }
-    }
-}
 
-struct OnboardingFragmentView: View {
-    private let _onboardingFormActivityName: String = "com.wonderapp.activity.form"
-    private let _onboardingPathActivityName: String = "com.wonderapp.activity.path"
+        var askPasswordOutlet: Outlet<AskPasswordControlName> {
+            .inactive()
+        }
 
-    @Binding var state: OnboardingState
-    let fragment: OnboardingFragment
+        var locateMeOutlet: Outlet<LocateAccountControlName> {
+            .inactive()
+        }
 
-    var body: some View {
-        let model = OnboardingModel(state: $state, validator: ValidatorService())
-        let viewModel = OnboardingViewModel(model: model)
-
-        switch fragment {
-        case .main:
-            NavigationStack(path: $state.path) {
-                OnboardingFragmentView(state: $state, fragment: .welcome)
-                    .navigationDestination(for: OnboardingFragment.self) { fragment in
-                        OnboardingFragmentView(state: $state, fragment: fragment)
-                            .toolbar {
-                                EmptyView()
-                            }
-                    }
+        var welcomeOutlet: Outlet<Void> {
+            Outlet {
+                model.advance(towards: .askEmail)
             }
-        case .welcome:
-            WelcomeView(page: $state.welcomePage,
-                        outlet: viewModel.welcomeOutlet)
-        case .askEmail:
-            AskEmailView(email: $state.form.email,
-                         canMoveToNextStep: model.canPresent(fragment: .newAccount),
-                         outlet: viewModel.askEmailOutlet)
-        case .askPassword:
-            AskPasswordView(password: $state.form.password,
-                            canMoveToNextStep: model.canLogin,
-                            outlet: viewModel.askPasswordOutlet)
-        case .newAccount:
-            NewAccountView(fullName: $state.form.fullName,
-                           newPassword: $state.form.newPassword)
-        case .locateUser:
-            LocateAccountView(outlet: viewModel.locateMeOutlet)
-        case .suggestions:
-            EmptyView()
         }
     }
 }

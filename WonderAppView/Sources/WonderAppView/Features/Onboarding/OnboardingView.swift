@@ -9,31 +9,23 @@ import SwiftUI
 
 enum Onboarding {}
 
-extension OnboardingState {
-    static let initial: OnboardingState = .init(form: .init(email: .empty,
-                                                            fullName: .empty,
-                                                            password: .empty,
-                                                            newPassword: .empty,
-                                                            focus: nil),
-                                                path: .init(),
-                                                welcomePage: 0)
-}
-
-struct OnboardingView: View {
-    @State var state: OnboardingState = .initial
-    var body: some View {
-        OnboardingFragmentView(state: $state, fragment: .main)
+extension Onboarding {
+    struct OnboardingView: View {
+        @State var state: ModelState = .initial
+        var body: some View {
+            FragmentView(state: $state, fragment: .main)
+        }
     }
-}
 
-struct OnboardingViewSample: View {
-    var body: some View {
-        OnboardingView()
+    private struct OnboardingViewSample: View {
+        var body: some View {
+            OnboardingView()
+        }
     }
-}
 
-struct OnboardingViewPreviews: PreviewProvider {
-    static var previews: some View {
-        OnboardingViewSample()
+    struct OnboardingViewPreviews: PreviewProvider {
+        static var previews: some View {
+            OnboardingViewSample()
+        }
     }
 }

@@ -11,12 +11,12 @@ public struct WonderAppRootView: View {
     public init() {}
 
     public var body: some View {
-        OnboardingView()
+        Onboarding.OnboardingView()
     }
 }
 
-public struct WonderAppRootViewPreviews: PreviewProvider {
-    public static var previews: some View {
+struct WonderAppRootViewPreviews: PreviewProvider {
+    static var previews: some View {
         WonderAppRootView()
     }
 }
