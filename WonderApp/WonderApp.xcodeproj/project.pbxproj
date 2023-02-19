@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B063613529886C2700E000FA /* WonderAppView in Frameworks */ = {isa = PBXBuildFile; productRef = B063613429886C2700E000FA /* WonderAppView */; };
+		B08E014B29A277D1004A3C9F /* WonderAppOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = B08E014A29A277D1004A3C9F /* WonderAppOnboarding */; };
 		B0C410A0297B65E9001B694C /* WonderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C4109F297B65E9001B694C /* WonderApp.swift */; };
 		B0C410A4297B65EA001B694C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A3297B65EA001B694C /* Assets.xcassets */; };
 		B0C410A7297B65EA001B694C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A6297B65EA001B694C /* Preview Assets.xcassets */; };
@@ -25,7 +25,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B063613529886C2700E000FA /* WonderAppView in Frameworks */,
+				B08E014B29A277D1004A3C9F /* WonderAppOnboarding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,7 +91,7 @@
 			);
 			name = WonderApp;
 			packageProductDependencies = (
-				B063613429886C2700E000FA /* WonderAppView */,
+				B08E014A29A277D1004A3C9F /* WonderAppOnboarding */,
 			);
 			productName = WonderApp;
 			productReference = B0C4109C297B65E9001B694C /* WonderApp.app */;
@@ -352,9 +352,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B063613429886C2700E000FA /* WonderAppView */ = {
+		B08E014A29A277D1004A3C9F /* WonderAppOnboarding */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = WonderAppView;
+			productName = WonderAppOnboarding;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,0 +1,16 @@
+input_dir: Sources/WonderAppDesignSystem
+output_dir: ${TARGET_TEMP_DIR}
+
+strings:
+  inputs:
+    - Support/en.lproj
+  outputs:
+    - templatePath: .swiftgen.l10n.stencil
+      output: Strings+Generated.swift
+
+xcassets:
+  inputs:
+    - Support/Assets.xcassets
+  outputs:
+    - templatePath: .swiftgen.assets.stencil
+      output: Assets+Generated.swift

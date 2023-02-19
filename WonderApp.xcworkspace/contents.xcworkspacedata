@@ -5,12 +5,15 @@
       location = "group:WonderApp/WonderApp.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:WonderAppView">
-   </FileRef>
-   <FileRef
-      location = "group:WonderAppModel">
-   </FileRef>
-   <FileRef
       location = "group:WonderAppExtensions">
+   </FileRef>
+   <FileRef
+      location = "group:WonderAppDesignSystem">
+   </FileRef>
+   <FileRef
+      location = "group:WonderAppOnboarding">
+   </FileRef>
+   <FileRef
+      location = "group:WonderAppService">
    </FileRef>
 </Workspace>
