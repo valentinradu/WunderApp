@@ -12,7 +12,7 @@ import WonderAppOnboarding
 struct WonderApp: App {
     var body: some Scene {
         WindowGroup {
-            Onboarding.OnboardingView()
+            OnboardingView()
         }
     }
 }

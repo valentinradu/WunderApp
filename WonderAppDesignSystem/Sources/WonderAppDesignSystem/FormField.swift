@@ -9,6 +9,17 @@ import SFSafeSymbols
 import SwiftUI
 import WonderAppExtensions
 
+private struct IsFocusedEnvironmentKey: EnvironmentKey {
+    static var defaultValue: Bool = false
+}
+
+private extension EnvironmentValues {
+    var isFocused: Bool {
+        get { self[IsFocusedEnvironmentKey.self] }
+        set { self[IsFocusedEnvironmentKey.self] = newValue }
+    }
+}
+
 public struct FormFieldSecureToggle: View {
     @Binding var isRevealed: Bool
 
@@ -49,7 +60,7 @@ public struct FormFieldStatusIcon: View {
 }
 
 public struct FormFieldStatusBorder: View {
-    @FocusState private var _focused
+    @Environment(\.isFocused) private var _isFocused
     @Environment(\.controlStatus) private var _controlStatus
 
     public var body: some View {
@@ -62,7 +73,7 @@ public struct FormFieldStatusBorder: View {
         case .failure:
             return .ds.infraRed600
         default:
-            return _focused ? Color.ds.white : Color.ds.oceanBlue200
+            return _isFocused ? Color.ds.white : Color.ds.oceanBlue200
         }
     }
 
@@ -71,7 +82,7 @@ public struct FormFieldStatusBorder: View {
         case .failure:
             return .ds.b1
         default:
-            return _focused ? .ds.b1 : .ds.bpt
+            return _isFocused ? .ds.b1 : .ds.bpt
         }
     }
 }
@@ -157,7 +168,7 @@ public struct FormField<T, I, U, O>: View where I: View, U: View, T: View, O: Vi
     private let _underline: U
     private let _overlay: O
     private let _base: T
-    @FocusState private var _focused
+    @FocusState private var _isFocused
 
     init(@ViewBuilder wrapping baseBuilder: () -> T,
          @ViewBuilder icon iconBuilder: () -> I,
@@ -171,23 +182,26 @@ public struct FormField<T, I, U, O>: View where I: View, U: View, T: View, O: Vi
 
     public var body: some View {
         _base
-            .focused($_focused)
             .padding(.vertical, .ds.s3)
             .safeAreaInset(edge: .trailing, spacing: 0) {
                 _icon.fixedSize()
             }
             .font(.ds.xl)
             .padding(.horizontal, .ds.s3)
-            .overlay(_overlay)
+            .overlay {
+                _overlay
+            }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 _underline
                     .frame(greedy: .horizontal, alignment: .leading)
             }
-            .animation(.easeInOut, value: _focused)
+            .animation(.easeInOut, value: _isFocused)
             .foregroundColor(.ds.white)
             .frame(maxWidth: .ds.d9)
+            .environment(\.isFocused, _isFocused)
+            .focused($_isFocused)
             .onTapGesture {
-                _focused = true
+                _isFocused = true
             }
     }
 

@@ -54,7 +54,7 @@ public struct DesignSystemGrid {
     /// Border 1 point
     public let bpt: CGFloat = 1
     /// Border 2 point
-    public let b1: CGFloat = 2
+    public let b1: CGFloat = 3
 }
 
 public extension CGFloat {

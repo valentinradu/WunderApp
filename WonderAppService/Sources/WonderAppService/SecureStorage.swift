@@ -19,7 +19,6 @@
 //
 //    var wrappedValue: Value {
 //        get {
-//            print("fetching secure data!")
 //            let query = [
 //                kSecClass: kSecClassGenericPassword,
 //                kSecAttrAccount: _key,

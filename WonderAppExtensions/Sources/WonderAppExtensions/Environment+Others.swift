@@ -14,6 +14,24 @@ public enum ControlStatus: Codable, Hashable {
     case success(message: String? = nil)
 }
 
+public extension ControlStatus {
+    var isSuccess: Bool {
+        if case .success = self {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    var isFailure: Bool {
+        if case .failure = self {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
 private struct StatusEnvironmentKey: EnvironmentKey {
     static var defaultValue: ControlStatus = .idle
 }
