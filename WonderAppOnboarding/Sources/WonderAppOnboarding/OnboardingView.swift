@@ -7,70 +7,68 @@
 
 import SwiftUI
 import WonderAppDesignSystem
-import WonderAppService
 
 private struct OnboardingFragmentView: View {
-    private let _formActivityName: String = "com.wonderapp.activity.onboarding.form"
-    private let _pathActivityName: String = "com.wonderapp.activity.onboarding.path"
+    private let _modelActivityName: String = "com.wonderapp.activity.onboarding.model"
     @FocusState private var _focused: FormFieldName?
-    @Environment(\.onboardingService) private var _onboardingService
-    @ObservedObject var state: OnboardingState
+    @ObservedObject var model: OnboardingModel
     let fragment: FragmentName
 
     var body: some View {
         Group {
             switch fragment {
             case .main:
-                OnboardingFragmentView(state: state, fragment: .welcome)
+                OnboardingFragmentView(model: model, fragment: .welcome)
                     .navigationDestination(for: FragmentName.self) { fragment in
-                        OnboardingFragmentView(state: state, fragment: fragment)
+                        OnboardingFragmentView(model: model, fragment: fragment)
                             .toolbar {
                                 EmptyView()
                             }
                     }
             case .welcome:
-                WelcomeView(page: $state.welcomePage,
-                            outlet: state.welcomeOutlet)
+                WelcomeView(model: model)
             case .askEmail:
-                AskEmailView(email: $state.form.email,
-                             canMoveToNextStep: state.canPresent(fragment: .newAccount),
-                             outlet: state.askEmailOutlet)
+                AskEmailView(email: $model.form.email,
+                             canMoveToNextStep: model.canPresent(fragment: .newAccount),
+                             outlet: model.askEmailFragmentOutlet)
                     .focused($_focused, equals: .email)
             case .askPassword:
-                AskPasswordView(password: $state.form.password,
-                                canMoveToNextStep: state.canLogin,
-                                outlet: state.askPasswordOutlet)
+                AskPasswordView(password: $model.form.password,
+                                canLogin: model.canLogin,
+                                outlet: model.askPasswordFragmentOutlet)
                     .focused($_focused, equals: .password)
             case .newAccount:
-                NewAccountView(fullName: $state.form.fullName,
-                               newPassword: $state.form.newPassword)
+                NewAccountView(fullName: $model.form.fullName,
+                               newPassword: $model.form.newPassword,
+                               canSignUp: model.canSignUp,
+                               outlet: model.newAccountFragmentOutlet)
                     .focused($_focused, equals: .fullName)
             case .locateUser:
-                LocateAccountView(outlet: state.locateMeOutlet)
+                LocateAccountView(outlet: model.locateMeFragmentOutlet)
             case .suggestions:
                 EmptyView()
             }
         }
-        .onChange(of: state.form.focus) { value in
-            _focused = value
-        }
-        .onChange(of: _focused) { value in
-            state.form.focus(field: value)
-        }
         .onAppear {
-            state.onAppear(fragment: fragment)
+            model.onAppear(fragment: fragment)
+        }
+        .userActivity(_modelActivityName) { activity in
+            model.save(to: activity)
+        }
+        .onContinueUserActivity(_modelActivityName) { activity in
+            model.restore(from: activity)
         }
     }
 }
 
 public struct OnboardingView: View {
-    @StateObject var state: OnboardingState = .empty
+    @StateObject private var _model: OnboardingModel = .init()
 
     public init() {}
 
     public var body: some View {
-        NavigationStack(path: $state.path) {
-            OnboardingFragmentView(state: state, fragment: .main)
+        NavigationStack(path: $_model.path) {
+            OnboardingFragmentView(model: _model, fragment: .main)
         }
     }
 }

@@ -5,7 +5,7 @@
 //  Created by Valentin Radu on 11/02/2023.
 //
 
-import WonderAppService
+import WonderAppDomain
 
 extension ValidationError {
     var localizedDescription: String {

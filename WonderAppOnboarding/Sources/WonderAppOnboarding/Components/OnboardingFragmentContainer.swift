@@ -8,7 +8,7 @@
 import SwiftUI
 import WonderAppDesignSystem
 
-struct FragmentContainer<C>: View where C: View {
+struct FormContainer<C>: View where C: View {
     private let _content: C
     @FocusState private var _focused
 

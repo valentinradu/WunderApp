@@ -16,12 +16,12 @@ enum AskPasswordControlName {
 
 struct AskPasswordView: View {
     @FocusState private var _focus: FormFieldName?
-    @Binding var password: FormFieldState
-    let canMoveToNextStep: Bool
+    @Binding var password: FormFieldModel
+    let canLogin: Bool
     let outlet: Outlet<AskPasswordControlName>
 
     var body: some View {
-        FragmentContainer {
+        FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askPasswordPrefix,
                               title: .l10n.askPasswordTitle)
@@ -32,15 +32,16 @@ struct AskPasswordView: View {
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
+                    .environment(\.controlStatus, password.status)
                 Spacer()
                 Button {
-                    //
+                    outlet.fire(from: .logInButton)
                 } label: {
                     Text(.l10n.askPasswordLogIn)
                 }
-                .disabled(!canMoveToNextStep)
+                .disabled(!canLogin)
                 Button(role: .cancel) {
-                    //
+                    outlet.fire(from: .signUpButton)
                 } label: {
                     Text(.l10n.askPasswordSignUp)
                 }
@@ -50,11 +51,11 @@ struct AskPasswordView: View {
 }
 
 private struct AskPasswordViewSample: View {
-    @State private var _password: FormFieldState = .empty
+    @State private var _password: FormFieldModel = .init()
 
     var body: some View {
         AskPasswordView(password: $_password,
-                        canMoveToNextStep: false,
+                        canLogin: false,
                         outlet: .inactive())
     }
 }

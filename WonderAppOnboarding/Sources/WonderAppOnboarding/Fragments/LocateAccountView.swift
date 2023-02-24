@@ -18,7 +18,7 @@ struct LocateAccountView: View {
     let outlet: Outlet<LocateAccountControlName>
 
     var body: some View {
-        FragmentContainer {
+        FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.locateAccountPrefix,
                               title: .l10n.locateAccountTitle)

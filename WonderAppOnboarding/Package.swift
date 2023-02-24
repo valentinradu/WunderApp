@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(path: "../WonderAppExtensions"),
         .package(path: "../WonderAppDesignSystem"),
-        .package(path: "../WonderAppService"),
+        .package(path: "../WonderAppDomain"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "3.3.2")),
     ],
     targets: [
@@ -27,7 +27,7 @@ let package = Package(
             dependencies: [
                 .byName(name: "WonderAppExtensions"),
                 .byName(name: "WonderAppDesignSystem"),
-                .byName(name: "WonderAppService"),
+                .byName(name: "WonderAppDomain"),
                 .product(name: "SFSafeSymbols", package: "sfsafesymbols")
             ]
         ),

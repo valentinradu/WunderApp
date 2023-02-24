@@ -10,12 +10,12 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskEmailView: View {
-    @Binding var email: FormFieldState
+    @Binding var email: FormFieldModel
     let canMoveToNextStep: Bool
     let outlet: Outlet<Void>
 
     var body: some View {
-        FragmentContainer {
+        FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askEmailPrefix,
                               title: .l10n.askEmailTitle)
@@ -24,6 +24,7 @@ struct AskEmailView: View {
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
+                    .environment(\.controlStatus, email.status)
                 Spacer()
                 Button {
                     outlet.fire()
@@ -34,11 +35,15 @@ struct AskEmailView: View {
                 .animation(.easeInOut, value: canMoveToNextStep)
             }
         }
+        .submitLabel(.next)
+        .onSubmit {
+            outlet.fire()
+        }
     }
 }
 
 private struct AskEmailViewSample: View {
-    @State private var _email: FormFieldState = .empty
+    @State private var _email: FormFieldModel = .init()
 
     var body: some View {
         AskEmailView(email: $_email,

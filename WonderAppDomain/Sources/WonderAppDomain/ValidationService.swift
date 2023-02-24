@@ -15,7 +15,24 @@ public enum ValidationError: Error {
     case passwordUppercaseFailure
 }
 
-public struct ValidatorService {
+private struct ValidationServiceKey: ServiceKey {
+    static var defaultValue: ValidationService = .init()
+}
+
+public extension Service.Repository {
+    var validationService: ValidationService {
+        get { self[ValidationServiceKey.self] }
+        set { self[ValidationServiceKey.self] = newValue }
+    }
+}
+
+public protocol ValidationServiceProtocol {
+    func validate(email: String) -> ValidationError?
+    func validate(name: String) -> ValidationError?
+    func validate(password: String) -> ValidationError?
+}
+
+public struct ValidationService: ValidationServiceProtocol {
     public init() {}
 
     public func validate(email: String) -> ValidationError? {

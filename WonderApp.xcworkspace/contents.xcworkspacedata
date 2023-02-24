@@ -14,6 +14,6 @@
       location = "group:WonderAppOnboarding">
    </FileRef>
    <FileRef
-      location = "group:WonderAppService">
+      location = "group:WonderAppDomain">
    </FileRef>
 </Workspace>

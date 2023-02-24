@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WonderAppDomain
 import WonderAppExtensions
 
 enum FragmentName: Codable, Hashable {
@@ -18,25 +19,35 @@ enum FragmentName: Codable, Hashable {
     case suggestions
 }
 
-enum FormFieldName: Codable, Hashable {
+enum FormFieldName: Codable, Hashable, CaseIterable {
     case email
     case fullName
     case password
     case newPassword
 }
 
-struct FormFieldState {
-    var value: String
+struct FormFieldModel {
+    var value: String {
+        didSet {
+            validateContinuously()
+        }
+    }
+
     var status: ControlStatus
     var isRedacted: Bool
-    var validator: (String) -> Error?
+    var validator: (String) -> ValidationError?
 
-    static let empty: FormFieldState = .init(
-        value: "",
-        status: .idle,
-        isRedacted: false,
-        validator: { _ in nil }
-    )
+    init(
+        value: String = "",
+        status: ControlStatus = .idle,
+        isRedacted: Bool = false,
+        validator: @escaping (String) -> ValidationError? = { _ in nil }
+    ) {
+        self.value = value
+        self.status = status
+        self.isRedacted = isRedacted
+        self.validator = validator
+    }
 
     mutating func validate() {
         if let error = validator(value) {
@@ -45,16 +56,45 @@ struct FormFieldState {
             status = .success()
         }
     }
+
+    private mutating func validateContinuously() {
+        let error = validator(value)
+        if let error {
+            if status != .idle {
+                status = .failure(message: error.localizedDescription)
+            }
+        } else {
+            status = .success()
+        }
+    }
 }
 
-struct FormState {
-    var email: FormFieldState
-    var fullName: FormFieldState
-    var password: FormFieldState
-    var newPassword: FormFieldState
-    private(set) var focus: FormFieldName?
+struct FormModel {
+    @Service(\.validationService) private var _validationService
 
-    private func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldState> {
+    var email: FormFieldModel
+    var fullName: FormFieldModel
+    var password: FormFieldModel
+    var newPassword: FormFieldModel
+    var focus: FormFieldName?
+
+    init(email: FormFieldModel = .init(),
+         fullName: FormFieldModel = .init(),
+         password: FormFieldModel = .init(),
+         newPassword: FormFieldModel = .init(),
+         focus: FormFieldName? = nil) {
+        self.email = email
+        self.fullName = fullName
+        self.password = password
+        self.newPassword = newPassword
+        self.focus = focus
+
+        self.email.validator = _validationService.validate(email:)
+        self.fullName.validator = _validationService.validate(name:)
+        self.newPassword.validator = _validationService.validate(password:)
+    }
+
+    private func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldModel> {
         switch fieldName {
         case .email:
             return \.email
@@ -67,41 +107,59 @@ struct FormState {
         }
     }
 
-    mutating func focus(field: FormFieldName?) {
-        if let currentFocusedField = field {
-            self[keyPath: keyPath(for: currentFocusedField)].validate()
+    mutating func focus(fieldName: FormFieldName?) {
+        if let focus, fieldName != focus {
+            let keyPath = keyPath(for: focus)
+            self[keyPath: keyPath].validate()
         }
-        focus = field
+        focus = fieldName
+    }
+
+    mutating func validate(fieldName: FormFieldName) {
+        switch fieldName {
+        case .email:
+            email.validate()
+        case .fullName:
+            fullName.validate()
+        case .password:
+            break
+        case .newPassword:
+            newPassword.validate()
+        }
+    }
+
+    mutating func validate() {
+        email.validate()
+        fullName.validate()
+        newPassword.validate()
     }
 }
 
-final class OnboardingState: ObservableObject {
-    @Published var form: FormState
-    @Published var path: [FragmentName]
-    @Published var welcomePage: Int
-    @Published var service: OnboardingService
+final class OnboardingModel: ObservableObject {
+    @Service(\.validationService) private var _validationService
 
-    init(form: FormState,
-         path: [FragmentName],
-         welcomePage: Int,
-         service: OnboardingService) {
-        self.form = form
-        self.path = path
-        self.welcomePage = welcomePage
-        self.service = service
-    }
+    @Published var form: FormModel = .init()
+    @Published var path: [FragmentName] = []
+    @Published var welcomePage: Int = 0
 
     var canLogin: Bool {
-        let emailError = service.validateEmail(form.email.value)
-        let passwordError = service.validatePassword(form.password.value)
+        let emailError = _validationService.validate(email: form.email.value)
+        let passwordError = _validationService.validate(password: form.password.value)
 
         return emailError.isNil && passwordError.isNil
+    }
+
+    var canSignUp: Bool {
+        let fullNameError = _validationService.validate(name: form.fullName.value)
+        let newPasswordError = _validationService.validate(password: form.newPassword.value)
+
+        return fullNameError.isNil && newPasswordError.isNil
     }
 
     func canPresent(fragment: FragmentName) -> Bool {
         switch fragment {
         case .newAccount:
-            let error = service.validateEmail(form.email.value)
+            let error = _validationService.validate(email: form.email.value)
             return error.isNil
         default:
             return true
@@ -113,27 +171,52 @@ final class OnboardingState: ObservableObject {
         case .main, .welcome, .locateUser, .suggestions:
             break
         case .askEmail:
-            form.focus(field: .email)
+            form.focus = .email
         case .askPassword:
-            form.focus(field: .password)
+            form.focus = .password
         case .newAccount:
-            form.focus(field: .fullName)
+            form.focus = .fullName
         }
     }
 
-    var askEmailOutlet: Outlet<Void> {
+    var askEmailFragmentOutlet: Outlet<Void> {
+        Outlet { [weak self] in
+            guard let self = self else { return }
+            self.advance(towards: .newAccount)
+        }
+    }
+
+    var askPasswordFragmentOutlet: Outlet<AskPasswordControlName> {
+        Outlet { [weak self] controlName in
+            guard let self = self else { return }
+
+            switch controlName {
+            case .logInButton:
+                break
+            case .signUpButton:
+                self.advance(towards: .newAccount)
+            }
+        }
+    }
+
+    var newAccountFragmentOutlet: Outlet<NewAccountControlName> {
+        Outlet { [weak self] controlName in
+            guard let self = self else { return }
+
+            switch controlName {
+            case .logInButton:
+                self.advance(towards: .askPassword)
+            case .signUpButton:
+                break
+            }
+        }
+    }
+
+    var locateMeFragmentOutlet: Outlet<LocateAccountControlName> {
         .inactive()
     }
 
-    var askPasswordOutlet: Outlet<AskPasswordControlName> {
-        .inactive()
-    }
-
-    var locateMeOutlet: Outlet<LocateAccountControlName> {
-        .inactive()
-    }
-
-    var welcomeOutlet: Outlet<Void> {
+    var welcomeFragmentOutlet: Outlet<Void> {
         Outlet { [weak self] in
             guard let self = self else { return }
             self.advance(towards: .askEmail)
@@ -141,14 +224,14 @@ final class OnboardingState: ObservableObject {
     }
 
     func save(to activity: NSUserActivity) {
-        let persistentState = PersistentOnboardingState(email: form.email.value,
+        let persistentModel = PersistentOnboardingModel(email: form.email.value,
                                                         fullName: form.fullName.value,
                                                         path: path,
                                                         welcomePage: welcomePage,
                                                         focus: form.focus)
         activity.isEligibleForHandoff = true
         do {
-            try activity.setTypedPayload(persistentState)
+            try activity.setTypedPayload(persistentModel)
         } catch {
             // TODO: Log this
         }
@@ -156,21 +239,20 @@ final class OnboardingState: ObservableObject {
 
     func restore(from activity: NSUserActivity) {
         do {
-            let persistentState = try activity.typedPayload(PersistentOnboardingState.self)
-            form.email = .init(value: persistentState.email,
+            let persistentModel = try activity.typedPayload(PersistentOnboardingModel.self)
+            form.email = .init(value: persistentModel.email,
                                status: .idle,
                                isRedacted: false,
-                               validator: service.validateEmail)
-            form.fullName = .init(value: persistentState.fullName,
+                               validator: _validationService.validate(email:))
+            form.fullName = .init(value: persistentModel.fullName,
                                   status: .idle,
                                   isRedacted: false,
-                                  validator: service.validateName)
-            form.email.validate()
-            form.fullName.validate()
+                                  validator: _validationService.validate(name:))
+            form.validate()
 
-            path = persistentState.path
-            welcomePage = persistentState.welcomePage
-            form.focus(field: persistentState.focus)
+            path = persistentModel.path
+            welcomePage = persistentModel.welcomePage
+            form.focus(fieldName: persistentModel.focus)
         } catch {
             // TODO: Log this
         }
@@ -190,21 +272,10 @@ final class OnboardingState: ObservableObject {
     }
 }
 
-struct PersistentOnboardingState: Codable {
+struct PersistentOnboardingModel: Codable {
     let email: String
     let fullName: String
     let path: [FragmentName]
     let welcomePage: Int
     let focus: FormFieldName?
-}
-
-extension OnboardingState {
-    static let empty: OnboardingState = .init(form: .init(email: .empty,
-                                                          fullName: .empty,
-                                                          password: .empty,
-                                                          newPassword: .empty,
-                                                          focus: nil),
-                                              path: .init(),
-                                              welcomePage: 0,
-                                              service: .empty())
 }

@@ -20,50 +20,49 @@ private struct WelcomeTabItem: View {
 }
 
 struct WelcomeView: View {
-    @Binding var page: Int
-    let outlet: Outlet<Void>
+    @ObservedObject var model: OnboardingModel
 
     var body: some View {
-        FragmentContainer {
-            VStack(spacing: .ds.s6) {
-                HeaderAnimation()
-                    .edgesIgnoringSafeArea(.horizontal)
-                    .overlay(alignment: .topLeading) {
-                        Image.ds.logo
-                    }
-                VStack(alignment: .center, spacing: .ds.s4) {
-                    DoubleHeading(prefix: .l10n.welcomeLandingGreeting,
-                                  title: .l10n.welcomeLandingCallout)
-                    PaginationCarousel(page: $page) {
-                        WelcomeTabItem(text: .l10n.welcomeLandingInfoFirst)
-                        WelcomeTabItem(text: .l10n.welcomeLandingInfoSecond)
-                        WelcomeTabItem(text: .l10n.welcomeLandingInfoThird)
-                    }
-                    .ignoresSafeArea(.all, edges: .horizontal)
-                    .safeAreaInset(edge: .bottom) {
-                        PaginationIndicator(page: page, of: 3)
-                    }
-                    .animation(.easeInOut, value: page)
-                    Button {
-                        outlet.fire()
-                    }
+        VStack(spacing: .ds.s6) {
+            HeaderAnimation()
+                .edgesIgnoringSafeArea(.horizontal)
+                .overlay(alignment: .topLeading) {
+                    Image.ds.logo
+                }
+            VStack(alignment: .center, spacing: .ds.s4) {
+                DoubleHeading(prefix: .l10n.welcomeLandingGreeting,
+                              title: .l10n.welcomeLandingCallout)
+                PaginationCarousel(page: $model.welcomePage) {
+                    WelcomeTabItem(text: .l10n.welcomeLandingInfoFirst)
+                    WelcomeTabItem(text: .l10n.welcomeLandingInfoSecond)
+                    WelcomeTabItem(text: .l10n.welcomeLandingInfoThird)
+                }
+                .ignoresSafeArea(.all, edges: .horizontal)
+                .safeAreaInset(edge: .bottom) {
+                    PaginationIndicator(page: model.welcomePage, of: 3)
+                }
+                .animation(.easeInOut, value: model.welcomePage)
+                Button {
+                    model.advance(towards: .askPassword)
+                }
                     label: {
-                        Text(.l10n.welcomeContinue)
-                    }
+                    Text(.l10n.welcomeContinue)
                 }
             }
         }
+        .safeAreaInset(.all, .ds.s4)
+        .frame(greedy: .all)
+        .background(Color.ds.oceanBlue900)
+        .foregroundColor(.ds.white)
+        .buttonStyle(FormButtonStyle())
     }
 }
 
 private struct WelcomeViewSample: View {
-    @State private var _page: Int = 0
+    @StateObject private var _model: OnboardingModel = .init()
 
     var body: some View {
-        WelcomeView(page: $_page,
-                    outlet: Outlet {
-                        _page += _page < 2 ? 1 : 0
-                    })
+        WelcomeView(model: _model)
     }
 }
 
