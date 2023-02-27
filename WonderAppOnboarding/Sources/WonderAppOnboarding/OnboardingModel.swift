@@ -26,6 +26,18 @@ enum FormFieldName: Codable, Hashable, CaseIterable {
     case newPassword
 }
 
+enum ButtonName {
+    case towardsAskEmail
+    case towardsAskPassword
+    case towardsSuggestions
+    case logInButton
+    case signUpButton
+    case locateMeButton
+    case skipLocateMeButton
+    case towardsSignUpButton
+    case towardsLogInButton
+}
+
 struct FormFieldModel {
     var value: String {
         didSet {
@@ -35,7 +47,7 @@ struct FormFieldModel {
 
     var status: ControlStatus
     var isRedacted: Bool
-    var validator: (String) -> ValidationError?
+    fileprivate var validator: (String) -> ValidationError?
 
     init(
         value: String = "",
@@ -76,7 +88,16 @@ struct FormModel {
     var fullName: FormFieldModel
     var password: FormFieldModel
     var newPassword: FormFieldModel
-    var focus: FormFieldName?
+    var focus: FormFieldName? {
+        didSet {
+            if let oldValue, oldValue != focus {
+                let keyPath = keyPath(for: oldValue)
+                if !self[keyPath: keyPath].value.isEmpty {
+                    self[keyPath: keyPath].validate()
+                }
+            }
+        }
+    }
 
     init(email: FormFieldModel = .init(),
          fullName: FormFieldModel = .init(),
@@ -107,15 +128,7 @@ struct FormModel {
         }
     }
 
-    mutating func focus(fieldName: FormFieldName?) {
-        if let focus, fieldName != focus {
-            let keyPath = keyPath(for: focus)
-            self[keyPath: keyPath].validate()
-        }
-        focus = fieldName
-    }
-
-    mutating func validate(fieldName: FormFieldName) {
+    fileprivate mutating func validate(fieldName: FormFieldName) {
         switch fieldName {
         case .email:
             email.validate()
@@ -128,11 +141,31 @@ struct FormModel {
         }
     }
 
-    mutating func validate() {
+    fileprivate mutating func validate() {
         email.validate()
         fullName.validate()
         newPassword.validate()
     }
+
+    var areLogInCredentialsValid: Bool {
+        email.status.isSuccess && !password.value.isEmpty
+    }
+
+    var areSignUpCredentialsValid: Bool {
+        fullName.status.isSuccess && newPassword.status.isSuccess
+    }
+}
+
+struct PersistentOnboardingModel: Codable {
+    let email: String
+    let fullName: String
+    let path: [FragmentName]
+    let welcomePage: Int
+    let focus: FormFieldName?
+}
+
+enum PersistentOnboardingUserActivity {
+    static let model: String = "com.wonderapp.onboarding.activity.model"
 }
 
 final class OnboardingModel: ObservableObject {
@@ -142,31 +175,16 @@ final class OnboardingModel: ObservableObject {
     @Published var path: [FragmentName] = []
     @Published var welcomePage: Int = 0
 
-    var canLogin: Bool {
-        let emailError = _validationService.validate(email: form.email.value)
-        let passwordError = _validationService.validate(password: form.password.value)
-
-        return emailError.isNil && passwordError.isNil
-    }
-
-    var canSignUp: Bool {
-        let fullNameError = _validationService.validate(name: form.fullName.value)
-        let newPasswordError = _validationService.validate(password: form.newPassword.value)
-
-        return fullNameError.isNil && newPasswordError.isNil
-    }
-
     func canPresent(fragment: FragmentName) -> Bool {
         switch fragment {
         case .newAccount:
-            let error = _validationService.validate(email: form.email.value)
-            return error.isNil
+            return form.email.status.isSuccess
         default:
             return true
         }
     }
 
-    func onAppear(fragment: FragmentName) {
+    func postAppear(fragment: FragmentName) {
         switch fragment {
         case .main, .welcome, .locateUser, .suggestions:
             break
@@ -179,51 +197,44 @@ final class OnboardingModel: ObservableObject {
         }
     }
 
-    var askEmailFragmentOutlet: Outlet<Void> {
-        Outlet { [weak self] in
-            guard let self = self else { return }
-            self.advance(towards: .newAccount)
+    func onInteraction(button: ButtonName) {
+        switch button {
+        case .towardsAskEmail:
+            if welcomePage < 2 {
+                welcomePage += 1
+            } else {
+                path.append(.askEmail)
+            }
+        case .towardsSignUpButton:
+            path.append(.newAccount)
+        case .towardsLogInButton:
+            path.append(.askPassword)
+        default:
+            break
         }
     }
 
-    var askPasswordFragmentOutlet: Outlet<AskPasswordControlName> {
-        Outlet { [weak self] controlName in
-            guard let self = self else { return }
-
-            switch controlName {
-            case .logInButton:
-                break
-            case .signUpButton:
-                self.advance(towards: .newAccount)
+    func onSubmit(formFieldName: FormFieldName) {
+        switch formFieldName {
+        case .email:
+            form.email.validate()
+            if form.email.status.isSuccess {
+                path.append(.newAccount)
+            }
+        case .fullName:
+            form.focus = .newPassword
+        case .password:
+            if form.areLogInCredentialsValid {
+                // TODO: Log in
+            }
+        case .newPassword:
+            if form.areSignUpCredentialsValid {
+                // TODO: Sign up
             }
         }
     }
 
-    var newAccountFragmentOutlet: Outlet<NewAccountControlName> {
-        Outlet { [weak self] controlName in
-            guard let self = self else { return }
-
-            switch controlName {
-            case .logInButton:
-                self.advance(towards: .askPassword)
-            case .signUpButton:
-                break
-            }
-        }
-    }
-
-    var locateMeFragmentOutlet: Outlet<LocateAccountControlName> {
-        .inactive()
-    }
-
-    var welcomeFragmentOutlet: Outlet<Void> {
-        Outlet { [weak self] in
-            guard let self = self else { return }
-            self.advance(towards: .askEmail)
-        }
-    }
-
-    func save(to activity: NSUserActivity) {
+    func onUserActivity(_ activity: NSUserActivity) {
         let persistentModel = PersistentOnboardingModel(email: form.email.value,
                                                         fullName: form.fullName.value,
                                                         path: path,
@@ -234,10 +245,11 @@ final class OnboardingModel: ObservableObject {
             try activity.setTypedPayload(persistentModel)
         } catch {
             // TODO: Log this
+            assertionFailure()
         }
     }
 
-    func restore(from activity: NSUserActivity) {
+    func onContinueUserActivity(_ activity: NSUserActivity) {
         do {
             let persistentModel = try activity.typedPayload(PersistentOnboardingModel.self)
             form.email = .init(value: persistentModel.email,
@@ -252,30 +264,10 @@ final class OnboardingModel: ObservableObject {
 
             path = persistentModel.path
             welcomePage = persistentModel.welcomePage
-            form.focus(fieldName: persistentModel.focus)
+            form.focus = persistentModel.focus
         } catch {
             // TODO: Log this
+            assertionFailure()
         }
     }
-
-    func advance(towards fragment: FragmentName) {
-        switch fragment {
-        case .askEmail:
-            if welcomePage < 2 {
-                welcomePage += 1
-            } else {
-                path.append(fragment)
-            }
-        default:
-            path.append(fragment)
-        }
-    }
-}
-
-struct PersistentOnboardingModel: Codable {
-    let email: String
-    let fullName: String
-    let path: [FragmentName]
-    let welcomePage: Int
-    let focus: FormFieldName?
 }

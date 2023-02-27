@@ -9,8 +9,6 @@ import SwiftUI
 import WonderAppDesignSystem
 
 private struct OnboardingFragmentView: View {
-    private let _modelActivityName: String = "com.wonderapp.activity.onboarding.model"
-    @FocusState private var _focused: FormFieldName?
     @ObservedObject var model: OnboardingModel
     let fragment: FragmentName
 
@@ -28,35 +26,19 @@ private struct OnboardingFragmentView: View {
             case .welcome:
                 WelcomeView(model: model)
             case .askEmail:
-                AskEmailView(email: $model.form.email,
-                             canMoveToNextStep: model.canPresent(fragment: .newAccount),
-                             outlet: model.askEmailFragmentOutlet)
-                    .focused($_focused, equals: .email)
+                AskEmailView(model: model)
             case .askPassword:
-                AskPasswordView(password: $model.form.password,
-                                canLogin: model.canLogin,
-                                outlet: model.askPasswordFragmentOutlet)
-                    .focused($_focused, equals: .password)
+                AskPasswordView(model: model)
             case .newAccount:
-                NewAccountView(fullName: $model.form.fullName,
-                               newPassword: $model.form.newPassword,
-                               canSignUp: model.canSignUp,
-                               outlet: model.newAccountFragmentOutlet)
-                    .focused($_focused, equals: .fullName)
+                NewAccountView(model: model)
             case .locateUser:
-                LocateAccountView(outlet: model.locateMeFragmentOutlet)
+                LocateAccountView(model: model)
             case .suggestions:
                 EmptyView()
             }
         }
-        .onAppear {
-            model.onAppear(fragment: fragment)
-        }
-        .userActivity(_modelActivityName) { activity in
-            model.save(to: activity)
-        }
-        .onContinueUserActivity(_modelActivityName) { activity in
-            model.restore(from: activity)
+        .task {
+            model.postAppear(fragment: fragment)
         }
     }
 }
@@ -69,6 +51,12 @@ public struct OnboardingView: View {
     public var body: some View {
         NavigationStack(path: $_model.path) {
             OnboardingFragmentView(model: _model, fragment: .main)
+        }
+        .userActivity(PersistentOnboardingUserActivity.model, isActive: true) { activity in
+            _model.onUserActivity(activity)
+        }
+        .onContinueUserActivity(PersistentOnboardingUserActivity.model) { activity in
+            _model.onContinueUserActivity(activity)
         }
     }
 }

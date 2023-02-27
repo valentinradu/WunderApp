@@ -10,7 +10,7 @@ import WonderAppDesignSystem
 
 struct FormContainer<C>: View where C: View {
     private let _content: C
-    @FocusState private var _focused
+    @FocusState private var _focused: Bool
 
     init(@ViewBuilder _ contentBuilder: () -> C) {
         _content = contentBuilder()
@@ -20,8 +20,8 @@ struct FormContainer<C>: View where C: View {
         GeometryReader { geo in
             ScrollView(.vertical, showsIndicators: false) {
                 _content
-                    .buttonStyle(FormButtonStyle())
                     .focused($_focused)
+                    .buttonStyle(FormButtonStyle())
                     .multilineTextAlignment(.leading)
                     .safeAreaInset(.all, .ds.s4)
                     .frame(minHeight: geo.size.height)

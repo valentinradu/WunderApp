@@ -44,47 +44,6 @@ private struct OnAppearTaskModifier: ViewModifier {
     }
 }
 
-private struct ContinueUserActivityTaskModifier: ViewModifier {
-    @State private var _activity: NSUserActivity? = nil
-    let activityType: String
-    let priority: TaskPriority
-    let perform: (NSUserActivity) async throws -> Void
-
-    func body(content: Content) -> some View {
-        content
-            .onChange(of: _activity,
-                      priority: priority,
-                      perform: { _ in
-                          if let activity = _activity {
-                              try await perform(activity)
-                              _activity = nil
-                          }
-                      })
-            .onContinueUserActivity(activityType) { _activity = $0 }
-    }
-}
-
-private struct UserActivityTaskModifier: ViewModifier {
-    @State private var _activity: NSUserActivity? = nil
-    let activityType: String
-    let isActive: Bool
-    let priority: TaskPriority
-    let update: (NSUserActivity) async throws -> Void
-
-    func body(content: Content) -> some View {
-        content
-            .onChange(of: _activity,
-                      priority: priority,
-                      perform: { _ in
-                          if let activity = _activity {
-                              try await update(activity)
-                              _activity = nil
-                          }
-                      })
-            .userActivity(activityType, isActive: isActive) { _activity = $0 }
-    }
-}
-
 private struct ThrowingRepeatingTaskModifier<ID>: ViewModifier where ID: Equatable {
     let id: ID
     let priority: TaskPriority
@@ -165,22 +124,6 @@ public extension View {
                   perform: @escaping () async throws -> Void) -> some View {
         modifier(OnAppearTaskModifier(priority: priority,
                                       perform: perform))
-    }
-
-    func onContinueUserActivity(_ activityType: String,
-                                priority: TaskPriority = .medium,
-                                perform: @escaping (NSUserActivity) async throws -> Void) -> some View {
-        modifier(ContinueUserActivityTaskModifier(activityType: activityType, priority: priority, perform: perform))
-    }
-
-    func userActivity(_ activityType: String,
-                      isActive: Bool = true,
-                      priority: TaskPriority = .medium,
-                      update: @escaping (NSUserActivity) async throws -> Void) -> some View {
-        modifier(UserActivityTaskModifier(activityType: activityType,
-                                          isActive: isActive,
-                                          priority: priority,
-                                          update: update))
     }
 
     func onError<E>(_ error: E, perform: @escaping (E) -> Void) -> some View where E: Error, E: Hashable {

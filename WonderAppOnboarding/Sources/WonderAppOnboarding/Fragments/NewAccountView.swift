@@ -9,17 +9,8 @@ import SwiftUI
 import WonderAppDesignSystem
 import WonderAppExtensions
 
-enum NewAccountControlName {
-    case signUpButton
-    case logInButton
-}
-
 struct NewAccountView: View {
-    @FocusState private var _focus: FormFieldName?
-    @Binding var fullName: FormFieldModel
-    @Binding var newPassword: FormFieldModel
-    let canSignUp: Bool
-    let outlet: Outlet<NewAccountControlName>
+    @ObservedObject var model: OnboardingModel
 
     var body: some View {
         FormContainer {
@@ -27,56 +18,55 @@ struct NewAccountView: View {
                 DoubleHeading(prefix: .l10n.newAccountPrefix,
                               title: .l10n.newAccountTitle)
                 VStack(alignment: .center, spacing: .ds.s1) {
-                    FormField(text: $fullName.value,
+                    FormField(text: $model.form.fullName.value,
                               placeholder: .l10n.newAccountFullNamePlaceholder)
-                        .focused($_focus, equals: .fullName)
+                        .focused($model.form.focus, equals: .fullName)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.words)
-                        .environment(\.controlStatus, fullName.status)
+                        .environment(\.controlStatus, model.form.fullName.status)
                         .submitLabel(.next)
+                        .focused($model.form.focus, equals: .fullName)
                         .onSubmit(of: .text) {
-                            _focus = .newPassword
+                            model.onSubmit(formFieldName: .fullName)
                         }
-                    FormField(secureText: $newPassword.value,
-                              isRevealed: $newPassword.isRedacted,
+                    FormField(secureText: $model.form.newPassword.value,
+                              isRevealed: $model.form.newPassword.isRedacted,
                               placeholder: .l10n.newAccountPasswordPlaceholder)
-                        .focused($_focus, equals: .newPassword)
+                        .focused($model.form.focus, equals: .newPassword)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.never)
-                        .environment(\.controlStatus, newPassword.status)
+                        .environment(\.controlStatus, model.form.newPassword.status)
                         .submitLabel(.join)
+                        .focused($model.form.focus, equals: .newPassword)
                         .onSubmit(of: .text) {
-                            outlet.fire(from: .signUpButton)
+                            model.onSubmit(formFieldName: .newPassword)
                         }
                 }
                 Spacer()
                 Button {
-                    outlet.fire(from: .signUpButton)
+                    model.onInteraction(button: .signUpButton)
                 } label: {
                     Text(.l10n.newAccountSignUp)
                 }
-                .disabled(!canSignUp)
+                .disabled(!model.form.areSignUpCredentialsValid)
                 Button(role: .cancel) {
-                    outlet.fire(from: .logInButton)
+                    model.onInteraction(button: .towardsLogInButton)
                 } label: {
                     Text(.l10n.newAccountLogIn)
                 }
             }
+            .animation(.easeInOut, value: model.form.areSignUpCredentialsValid)
         }
     }
 }
 
 private struct NewAccountViewSample: View {
-    @State private var _fullName: FormFieldModel = .init()
-    @State private var _password: FormFieldModel = .init()
+    @StateObject private var _model: OnboardingModel = .init()
 
     var body: some View {
-        NewAccountView(fullName: $_fullName,
-                       newPassword: $_password,
-                       canSignUp: false,
-                       outlet: .inactive())
+        NewAccountView(model: _model)
     }
 }
 

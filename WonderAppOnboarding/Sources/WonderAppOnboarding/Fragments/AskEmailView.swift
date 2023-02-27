@@ -10,45 +10,43 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskEmailView: View {
-    @Binding var email: FormFieldModel
-    let canMoveToNextStep: Bool
-    let outlet: Outlet<Void>
+    @ObservedObject var model: OnboardingModel
 
     var body: some View {
+        let canMoveToNextStep = model.canPresent(fragment: .newAccount)
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askEmailPrefix,
                               title: .l10n.askEmailTitle)
-                FormField(text: $email.value,
+                FormField(text: $model.form.email.value,
                           placeholder: .l10n.askEmailPlaceholder)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, email.status)
+                    .environment(\.controlStatus, model.form.email.status)
+                    .focused($model.form.focus, equals: .email)
+                    .onSubmit(of: .text) {
+                        model.onSubmit(formFieldName: .email)
+                    }
                 Spacer()
                 Button {
-                    outlet.fire()
+                    model.onInteraction(button: .towardsSignUpButton)
                 } label: {
                     Text(.l10n.askEmailContinue)
                 }
                 .disabled(!canMoveToNextStep)
-                .animation(.easeInOut, value: canMoveToNextStep)
             }
         }
         .submitLabel(.next)
-        .onSubmit {
-            outlet.fire()
-        }
+        .animation(.easeInOut, value: canMoveToNextStep)
     }
 }
 
 private struct AskEmailViewSample: View {
-    @State private var _email: FormFieldModel = .init()
+    @StateObject private var _model: OnboardingModel = .init()
 
     var body: some View {
-        AskEmailView(email: $_email,
-                     canMoveToNextStep: false,
-                     outlet: .inactive())
+        AskEmailView(model: _model)
     }
 }
 

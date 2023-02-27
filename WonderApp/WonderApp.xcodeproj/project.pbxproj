@@ -14,6 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B05CEFA729ACF3110058916B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0C4109C297B65E9001B694C /* WonderApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WonderApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0C4109F297B65E9001B694C /* WonderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WonderApp.swift; sourceTree = "<group>"; };
 		B0C410A3297B65EA001B694C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,6 +60,7 @@
 		B0C4109E297B65E9001B694C /* WonderApp */ = {
 			isa = PBXGroup;
 			children = (
+				B05CEFA729ACF3110058916B /* Info.plist */,
 				B0C4109F297B65E9001B694C /* WonderApp.swift */,
 				B0C410A3297B65EA001B694C /* Assets.xcassets */,
 				B0C410A5297B65EA001B694C /* Preview Content */,
@@ -279,6 +281,7 @@
 				DEVELOPMENT_TEAM = J3QR77E8B7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WonderApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -309,6 +312,7 @@
 				DEVELOPMENT_TEAM = J3QR77E8B7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WonderApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

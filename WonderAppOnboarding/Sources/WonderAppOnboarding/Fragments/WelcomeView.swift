@@ -43,7 +43,7 @@ struct WelcomeView: View {
                 }
                 .animation(.easeInOut, value: model.welcomePage)
                 Button {
-                    model.advance(towards: .askPassword)
+                    model.onInteraction(button: .towardsAskEmail)
                 }
                     label: {
                     Text(.l10n.welcomeContinue)

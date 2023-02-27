@@ -9,13 +9,8 @@ import SwiftUI
 import WonderAppDesignSystem
 import WonderAppExtensions
 
-enum LocateAccountControlName {
-    case locateMe
-    case locateLater
-}
-
 struct LocateAccountView: View {
-    let outlet: Outlet<LocateAccountControlName>
+    @ObservedObject var model: OnboardingModel
 
     var body: some View {
         FormContainer {
@@ -27,12 +22,12 @@ struct LocateAccountView: View {
                     .frame(greedy: .horizontal, alignment: .leading)
                 Spacer()
                 Button {
-                    outlet.fire(from: .locateMe)
+                    model.onInteraction(button: .locateMeButton)
                 } label: {
                     Text(.l10n.locateAccountLocateMe)
                 }
                 Button(role: .cancel) {
-                    outlet.fire(from: .locateLater)
+                    model.onInteraction(button: .skipLocateMeButton)
                 } label: {
                     Text(.l10n.locateAccountLocateLater)
                 }
@@ -42,8 +37,10 @@ struct LocateAccountView: View {
 }
 
 private struct LocateAccountViewSample: View {
+    @StateObject private var _model: OnboardingModel = .init()
+    
     var body: some View {
-        LocateAccountView(outlet: .inactive())
+        LocateAccountView(model: _model)
     }
 }
 

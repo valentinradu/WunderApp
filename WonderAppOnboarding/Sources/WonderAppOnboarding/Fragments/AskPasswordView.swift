@@ -9,54 +9,45 @@ import SwiftUI
 import WonderAppDesignSystem
 import WonderAppExtensions
 
-enum AskPasswordControlName {
-    case logInButton
-    case signUpButton
-}
-
 struct AskPasswordView: View {
-    @FocusState private var _focus: FormFieldName?
-    @Binding var password: FormFieldModel
-    let canLogin: Bool
-    let outlet: Outlet<AskPasswordControlName>
+    @ObservedObject var model: OnboardingModel
 
     var body: some View {
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askPasswordPrefix,
                               title: .l10n.askPasswordTitle)
-                FormField(secureText: $password.value,
-                          isRevealed: $password.isRedacted,
+                FormField(secureText: $model.form.password.value,
+                          isRevealed: $model.form.password.isRedacted,
                           placeholder: .l10n.askPasswordPlaceholder)
-                    .focused($_focus, equals: .password)
+                    .focused($model.form.focus, equals: .password)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, password.status)
+                    .environment(\.controlStatus, model.form.password.status)
                 Spacer()
                 Button {
-                    outlet.fire(from: .logInButton)
+                    model.onInteraction(button: .logInButton)
                 } label: {
                     Text(.l10n.askPasswordLogIn)
                 }
-                .disabled(!canLogin)
+                .disabled(!model.form.areLogInCredentialsValid)
                 Button(role: .cancel) {
-                    outlet.fire(from: .signUpButton)
+                    model.onInteraction(button: .towardsSignUpButton)
                 } label: {
                     Text(.l10n.askPasswordSignUp)
                 }
             }
+            .animation(.easeInOut, value: model.form.areLogInCredentialsValid)
         }
     }
 }
 
 private struct AskPasswordViewSample: View {
-    @State private var _password: FormFieldModel = .init()
+    @StateObject private var _model: OnboardingModel = .init()
 
     var body: some View {
-        AskPasswordView(password: $_password,
-                        canLogin: false,
-                        outlet: .inactive())
+        AskPasswordView(model: _model)
     }
 }
 

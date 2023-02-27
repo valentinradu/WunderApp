@@ -78,12 +78,7 @@ public struct FormFieldStatusBorder: View {
     }
 
     private var _lineWidth: CGFloat {
-        switch _controlStatus {
-        case .failure:
-            return .ds.b1
-        default:
-            return _isFocused ? .ds.b1 : .ds.bpt
-        }
+        _isFocused ? .ds.b1 : .ds.bpt
     }
 }
 
