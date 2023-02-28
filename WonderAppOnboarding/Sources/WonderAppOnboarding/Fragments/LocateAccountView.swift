@@ -10,7 +10,7 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct LocateAccountView: View {
-    @ObservedObject var model: OnboardingModel
+    @ObservedObject var model: OnboardingViewModel
 
     var body: some View {
         FormContainer {
@@ -37,8 +37,8 @@ struct LocateAccountView: View {
 }
 
 private struct LocateAccountViewSample: View {
-    @StateObject private var _model: OnboardingModel = .init()
-    
+    @StateObject private var _model: OnboardingViewModel = .init()
+
     var body: some View {
         LocateAccountView(model: _model)
     }

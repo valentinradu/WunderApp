@@ -9,7 +9,7 @@ import SwiftUI
 import WonderAppDesignSystem
 
 private struct OnboardingFragmentView: View {
-    @ObservedObject var model: OnboardingModel
+    @ObservedObject var model: OnboardingViewModel
     let fragment: FragmentName
 
     var body: some View {
@@ -19,9 +19,6 @@ private struct OnboardingFragmentView: View {
                 OnboardingFragmentView(model: model, fragment: .welcome)
                     .navigationDestination(for: FragmentName.self) { fragment in
                         OnboardingFragmentView(model: model, fragment: fragment)
-                            .toolbar {
-                                EmptyView()
-                            }
                     }
             case .welcome:
                 WelcomeView(model: model)
@@ -37,26 +34,28 @@ private struct OnboardingFragmentView: View {
                 EmptyView()
             }
         }
+        .toolbar(.hidden, for: .navigationBar)
         .task {
-            model.postAppear(fragment: fragment)
+            model.onPostAppear(fragment: fragment)
         }
     }
 }
 
 public struct OnboardingView: View {
-    @StateObject private var _model: OnboardingModel = .init()
+    @StateObject private var _model: OnboardingViewModel = .init()
 
     public init() {}
 
     public var body: some View {
-        NavigationStack(path: $_model.path) {
-            OnboardingFragmentView(model: _model, fragment: .main)
+        Group {
+            if _model.isReady {
+                NavigationStack(path: $_model.path) {
+                    OnboardingFragmentView(model: _model, fragment: .main)
+                }
+            }
         }
-        .userActivity(PersistentOnboardingUserActivity.model, isActive: true) { activity in
-            _model.onUserActivity(activity)
-        }
-        .onContinueUserActivity(PersistentOnboardingUserActivity.model) { activity in
-            _model.onContinueUserActivity(activity)
+        .task {
+            await _model.prepare()
         }
     }
 }

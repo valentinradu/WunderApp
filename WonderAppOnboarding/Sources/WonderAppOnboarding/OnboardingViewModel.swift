@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import WonderAppDomain
 import WonderAppExtensions
 
@@ -47,13 +48,13 @@ struct FormFieldModel {
 
     var status: ControlStatus
     var isRedacted: Bool
-    fileprivate var validator: (String) -> ValidationError?
+    fileprivate var validator: (String) -> InputValidatorError?
 
     init(
         value: String = "",
         status: ControlStatus = .idle,
         isRedacted: Bool = false,
-        validator: @escaping (String) -> ValidationError? = { _ in nil }
+        validator: @escaping (String) -> InputValidatorError? = { _ in nil }
     ) {
         self.value = value
         self.status = status
@@ -62,6 +63,7 @@ struct FormFieldModel {
     }
 
     mutating func validate() {
+        guard !value.isEmpty else { return }
         if let error = validator(value) {
             status = .failure(message: error.localizedDescription)
         } else {
@@ -82,8 +84,6 @@ struct FormFieldModel {
 }
 
 struct FormModel {
-    @Service(\.validationService) private var _validationService
-
     var email: FormFieldModel
     var fullName: FormFieldModel
     var password: FormFieldModel
@@ -110,12 +110,13 @@ struct FormModel {
         self.newPassword = newPassword
         self.focus = focus
 
-        self.email.validator = _validationService.validate(email:)
-        self.fullName.validator = _validationService.validate(name:)
-        self.newPassword.validator = _validationService.validate(password:)
+        let inputValidator = InputValidator()
+        self.email.validator = inputValidator.validate(email:)
+        self.fullName.validator = inputValidator.validate(name:)
+        self.newPassword.validator = inputValidator.validate(password:)
     }
 
-    private func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldModel> {
+    func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldModel> {
         switch fieldName {
         case .email:
             return \.email
@@ -128,25 +129,6 @@ struct FormModel {
         }
     }
 
-    fileprivate mutating func validate(fieldName: FormFieldName) {
-        switch fieldName {
-        case .email:
-            email.validate()
-        case .fullName:
-            fullName.validate()
-        case .password:
-            break
-        case .newPassword:
-            newPassword.validate()
-        }
-    }
-
-    fileprivate mutating func validate() {
-        email.validate()
-        fullName.validate()
-        newPassword.validate()
-    }
-
     var areLogInCredentialsValid: Bool {
         email.status.isSuccess && !password.value.isEmpty
     }
@@ -154,9 +136,15 @@ struct FormModel {
     var areSignUpCredentialsValid: Bool {
         fullName.status.isSuccess && newPassword.status.isSuccess
     }
+
+    fileprivate mutating func validate() {
+        email.validate()
+        fullName.validate()
+        newPassword.validate()
+    }
 }
 
-struct PersistentOnboardingModel: Codable {
+struct PersistentOnboardingViewModel: Codable, Sendable {
     let email: String
     let fullName: String
     let path: [FragmentName]
@@ -164,27 +152,43 @@ struct PersistentOnboardingModel: Codable {
     let focus: FormFieldName?
 }
 
-enum PersistentOnboardingUserActivity {
-    static let model: String = "com.wonderapp.onboarding.activity.model"
+private struct OnboardingViewModelStorageKey: StorageKeyValueQuery {
+    typealias Value = PersistentOnboardingViewModel
+    let trait: StorageKeyValueQueryTrait = .heavyweight
+    let key: String = "Onboarding.model"
+    let hash: String = "Onboarding.model"
 }
 
-final class OnboardingModel: ObservableObject {
-    @Service(\.validationService) private var _validationService
+private extension StorageKeyValueQuery where Self == OnboardingViewModelStorageKey {
+    static var onboardingViewModel: OnboardingViewModelStorageKey { OnboardingViewModelStorageKey() }
+}
 
-    @Published var form: FormModel = .init()
-    @Published var path: [FragmentName] = []
-    @Published var welcomePage: Int = 0
-
-    func canPresent(fragment: FragmentName) -> Bool {
-        switch fragment {
-        case .newAccount:
-            return form.email.status.isSuccess
-        default:
-            return true
+@MainActor
+final class OnboardingViewModel: ObservableObject {
+    @Published var form: FormModel = .init() {
+        didSet {
+            _onPersistentFieldChange()
         }
     }
 
-    func postAppear(fragment: FragmentName) {
+    @Published var path: [FragmentName] = [] {
+        didSet {
+            _onPersistentFieldChange()
+        }
+    }
+
+    @Published var welcomePage: Int = 0 {
+        didSet {
+            _onPersistentFieldChange()
+        }
+    }
+
+    @Published var isReady: Bool = false
+
+    private var _saveTask: Task<Void, Error>?
+    @Service(\.storage) private var _storageService
+
+    func onPostAppear(fragment: FragmentName) {
         switch fragment {
         case .main, .welcome, .locateUser, .suggestions:
             break
@@ -234,40 +238,53 @@ final class OnboardingModel: ObservableObject {
         }
     }
 
-    func onUserActivity(_ activity: NSUserActivity) {
-        let persistentModel = PersistentOnboardingModel(email: form.email.value,
-                                                        fullName: form.fullName.value,
-                                                        path: path,
-                                                        welcomePage: welcomePage,
-                                                        focus: form.focus)
-        activity.isEligibleForHandoff = true
-        do {
-            try activity.setTypedPayload(persistentModel)
-        } catch {
-            // TODO: Log this
-            assertionFailure()
+    func prepare() async {
+        await _attemptToRestore()
+        isReady = true
+    }
+
+    private func _onPersistentFieldChange() {
+        _saveTask?.cancel()
+
+        _saveTask = Task { [weak self] in
+            try await Task.sleep(for: .seconds(1))
+            try Task.checkCancellation()
+            await self?._save()
         }
     }
 
-    func onContinueUserActivity(_ activity: NSUserActivity) {
+    private func _save() async {
+        let persistentModel = PersistentOnboardingViewModel(email: form.email.value,
+                                                            fullName: form.fullName.value,
+                                                            path: path,
+                                                            welcomePage: welcomePage,
+                                                            focus: form.focus)
         do {
-            let persistentModel = try activity.typedPayload(PersistentOnboardingModel.self)
-            form.email = .init(value: persistentModel.email,
-                               status: .idle,
-                               isRedacted: false,
-                               validator: _validationService.validate(email:))
-            form.fullName = .init(value: persistentModel.fullName,
-                                  status: .idle,
-                                  isRedacted: false,
-                                  validator: _validationService.validate(name:))
-            form.validate()
-
-            path = persistentModel.path
-            welcomePage = persistentModel.welcomePage
-            form.focus = persistentModel.focus
+            try await _storageService.save(query: .onboardingViewModel, value: persistentModel)
         } catch {
-            // TODO: Log this
             assertionFailure()
+            // TODO: Log
         }
+    }
+
+    private func _attemptToRestore() async {
+        guard let persistentModel = try? await _storageService.fetch(query: .onboardingViewModel) else {
+            return
+        }
+
+        let validator = InputValidator()
+        form.email = .init(value: persistentModel.email,
+                           status: .idle,
+                           isRedacted: false,
+                           validator: validator.validate(email:))
+        form.fullName = .init(value: persistentModel.fullName,
+                              status: .idle,
+                              isRedacted: false,
+                              validator: validator.validate(name:))
+        form.validate()
+
+        path = persistentModel.path
+        welcomePage = persistentModel.welcomePage
+        form.focus = persistentModel.focus
     }
 }

@@ -10,10 +10,9 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskEmailView: View {
-    @ObservedObject var model: OnboardingModel
+    @ObservedObject var model: OnboardingViewModel
 
     var body: some View {
-        let canMoveToNextStep = model.canPresent(fragment: .newAccount)
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askEmailPrefix,
@@ -34,16 +33,16 @@ struct AskEmailView: View {
                 } label: {
                     Text(.l10n.askEmailContinue)
                 }
-                .disabled(!canMoveToNextStep)
+                .disabled(!model.form.email.status.isSuccess)
             }
         }
         .submitLabel(.next)
-        .animation(.easeInOut, value: canMoveToNextStep)
+        .animation(.easeInOut, value: model.form.email.status.isSuccess)
     }
 }
 
 private struct AskEmailViewSample: View {
-    @StateObject private var _model: OnboardingModel = .init()
+    @StateObject private var _model: OnboardingViewModel = .init()
 
     var body: some View {
         AskEmailView(model: _model)

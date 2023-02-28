@@ -5,9 +5,9 @@
 //  Created by Valentin Radu on 11/02/2023.
 //
 
-import WonderAppDomain
+import WonderAppExtensions
 
-extension ValidationError {
+extension InputValidatorError {
     var localizedDescription: String {
         switch self {
         case .invalidEmail:

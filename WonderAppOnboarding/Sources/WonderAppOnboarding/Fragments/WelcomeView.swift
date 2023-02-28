@@ -20,7 +20,7 @@ private struct WelcomeTabItem: View {
 }
 
 struct WelcomeView: View {
-    @ObservedObject var model: OnboardingModel
+    @ObservedObject var model: OnboardingViewModel
 
     var body: some View {
         VStack(spacing: .ds.s6) {
@@ -59,7 +59,7 @@ struct WelcomeView: View {
 }
 
 private struct WelcomeViewSample: View {
-    @StateObject private var _model: OnboardingModel = .init()
+    @StateObject private var _model: OnboardingViewModel = .init()
 
     var body: some View {
         WelcomeView(model: _model)

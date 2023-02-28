@@ -10,7 +10,7 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskPasswordView: View {
-    @ObservedObject var model: OnboardingModel
+    @ObservedObject var model: OnboardingViewModel
 
     var body: some View {
         FormContainer {
@@ -44,7 +44,7 @@ struct AskPasswordView: View {
 }
 
 private struct AskPasswordViewSample: View {
-    @StateObject private var _model: OnboardingModel = .init()
+    @StateObject private var _model: OnboardingViewModel = .init()
 
     var body: some View {
         AskPasswordView(model: _model)

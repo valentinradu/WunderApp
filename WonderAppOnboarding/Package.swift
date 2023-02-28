@@ -17,7 +17,7 @@ let package = Package(
         .package(path: "../WonderAppExtensions"),
         .package(path: "../WonderAppDesignSystem"),
         .package(path: "../WonderAppDomain"),
-        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "3.3.2")),
+        .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", .upToNextMajor(from: "3.3.2"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

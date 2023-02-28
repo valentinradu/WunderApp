@@ -108,31 +108,33 @@ public struct FormFieldStatusLabel: View {
 
 public struct SecureFieldView<P>: View where P: View {
     private var _placeholder: P
-    private var _secureText: Binding<String>
+    @Binding private var _secureText: String
     private var _isRevealed: Bool
 
     init(secureText: Binding<String>,
          isRevealed: Bool,
          @ViewBuilder placeholderBuilder: () -> P) {
         _placeholder = placeholderBuilder()
-        _secureText = secureText
+        __secureText = secureText
         _isRevealed = isRevealed
     }
 
     public var body: some View {
         ZStack {
-            SwiftUI.TextField("", text: _secureText)
+            SwiftUI.TextField("", text: $_secureText)
                 .opacity(_isRevealed ? 1 : 0)
-            SwiftUI.SecureField("", text: _secureText)
+            SwiftUI.SecureField("", text: $_secureText)
                 .opacity(_isRevealed ? 0 : 1)
         }
         .frame(height: .ds.d1)
         .background(alignment: .leading) {
             _placeholder
-                .opacity(_secureText.wrappedValue.isEmpty ? 1 : 0)
+                .opacity(_secureText.isEmpty ? 1 : 0)
                 .allowsHitTesting(false)
                 .foregroundColor(.ds.oceanBlue400)
         }
+        .animation(nil, value: _isRevealed)
+        .animation(nil, value: _secureText)
     }
 }
 

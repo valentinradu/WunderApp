@@ -32,13 +32,14 @@ public extension ControlStatus {
     }
 }
 
-private struct StatusEnvironmentKey: EnvironmentKey {
+private struct ControlStatusEnvironmentKey: EnvironmentKey {
     static var defaultValue: ControlStatus = .idle
 }
 
 public extension EnvironmentValues {
     var controlStatus: ControlStatus {
-        get { self[StatusEnvironmentKey.self] }
-        set { self[StatusEnvironmentKey.self] = newValue }
+        get { self[ControlStatusEnvironmentKey.self] }
+        set { self[ControlStatusEnvironmentKey.self] = newValue }
     }
 }
+

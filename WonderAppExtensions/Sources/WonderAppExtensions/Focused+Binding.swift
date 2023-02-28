@@ -48,12 +48,12 @@ private struct FocusedEqualsBindingModifier<V>: ViewModifier where V: Hashable {
                 _focus = _externalFocus
             }
             .onChange(of: _focus) { focus in
-                if _isPresented {
+                if _isPresented, _externalFocus != focus {
                     _externalFocus = focus
                 }
             }
             .onChange(of: _externalFocus) { focus in
-                if _isPresented {
+                if _isPresented, _focus != focus {
                     _focus = focus
                 }
             }
