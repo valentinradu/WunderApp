@@ -42,4 +42,3 @@ public extension EnvironmentValues {
         set { self[ControlStatusEnvironmentKey.self] = newValue }
     }
 }
-
