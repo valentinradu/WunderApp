@@ -152,14 +152,13 @@ struct PersistentOnboardingViewModel: Codable, Sendable {
     let focus: FormFieldName?
 }
 
-private struct OnboardingViewModelStorageKey: StorageKeyValueQuery {
+private struct OnboardingViewModelStorageKey: KeyValueStorageKey {
     typealias Value = PersistentOnboardingViewModel
     let trait: StorageKeyValueQueryTrait = .heavyweight
-    let key: String = "Onboarding.model"
-    let hash: String = "Onboarding.model"
+    let key: String = "Onboarding.viewmodel"
 }
 
-private extension StorageKeyValueQuery where Self == OnboardingViewModelStorageKey {
+private extension KeyValueStorageKey where Self == OnboardingViewModelStorageKey {
     static var onboardingViewModel: OnboardingViewModelStorageKey { OnboardingViewModelStorageKey() }
 }
 
@@ -186,7 +185,7 @@ final class OnboardingViewModel: ObservableObject {
     @Published var isReady: Bool = false
 
     private var _saveTask: Task<Void, Error>?
-    @Service(\.storage) private var _storageService
+    @Service(\.storageService) private var _storageService
 
     func onPostAppear(fragment: FragmentName) {
         switch fragment {
@@ -260,7 +259,7 @@ final class OnboardingViewModel: ObservableObject {
                                                             welcomePage: welcomePage,
                                                             focus: form.focus)
         do {
-            try await _storageService.save(query: .onboardingViewModel, value: persistentModel)
+            try await _storageService.update(query: .onboardingViewModel, value: persistentModel)
         } catch {
             assertionFailure()
             // TODO: Log
@@ -268,7 +267,7 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     private func _attemptToRestore() async {
-        guard let persistentModel = try? await _storageService.fetch(query: .onboardingViewModel) else {
+        guard let persistentModel = try? await _storageService.read(query: .onboardingViewModel) else {
             return
         }
 
