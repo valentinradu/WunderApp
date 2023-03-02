@@ -12,7 +12,8 @@ import WonderAppOnboarding
 struct WonderApp: App {
     var body: some Scene {
         WindowGroup {
-            OnboardingView()
+            let viewModel = OnboardingViewModel()
+            OnboardingView(viewModel: viewModel)
         }
     }
 }

@@ -10,7 +10,7 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct LocateAccountView: View {
-    @ObservedObject var model: OnboardingViewModel
+    @ObservedObject var viewModel: OnboardingViewModel
 
     var body: some View {
         FormContainer {
@@ -22,12 +22,12 @@ struct LocateAccountView: View {
                     .frame(greedy: .horizontal, alignment: .leading)
                 Spacer()
                 Button {
-                    model.onInteraction(button: .locateMeButton)
+                    viewModel.onInteraction(button: .locateMeButton)
                 } label: {
                     Text(.l10n.locateAccountLocateMe)
                 }
                 Button(role: .cancel) {
-                    model.onInteraction(button: .skipLocateMeButton)
+                    viewModel.onInteraction(button: .skipLocateMeButton)
                 } label: {
                     Text(.l10n.locateAccountLocateLater)
                 }
@@ -40,7 +40,7 @@ private struct LocateAccountViewSample: View {
     @StateObject private var _model: OnboardingViewModel = .init()
 
     var body: some View {
-        LocateAccountView(model: _model)
+        LocateAccountView(viewModel: _model)
     }
 }
 

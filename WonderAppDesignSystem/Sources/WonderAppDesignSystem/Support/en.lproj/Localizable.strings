@@ -31,3 +31,5 @@
 "errorMissingName" = "You need to fill in your name";
 "errorPasswordLengthFailure" = "Password needs to be at least 8 characters long";
 "errorPasswordUppercaseFailure" = "Password needs to contain at least an uppercase letter";
+"errorWrongEmailOrPassword" = "Failed to log in. Wrong email or password";
+"errorGeneric" = "Something went wrong. Please try again later.";

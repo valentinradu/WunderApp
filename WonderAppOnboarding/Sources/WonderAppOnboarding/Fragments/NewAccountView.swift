@@ -10,7 +10,7 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct NewAccountView: View {
-    @ObservedObject var model: OnboardingViewModel
+    @ObservedObject var viewModel: OnboardingViewModel
 
     var body: some View {
         FormContainer {
@@ -18,46 +18,46 @@ struct NewAccountView: View {
                 DoubleHeading(prefix: .l10n.newAccountPrefix,
                               title: .l10n.newAccountTitle)
                 VStack(alignment: .center, spacing: .ds.s1) {
-                    FormField(text: $model.form.fullName.value,
+                    FormField(text: $viewModel.form.fullName.value,
                               placeholder: .l10n.newAccountFullNamePlaceholder)
-                        .focused($model.form.focus, equals: .fullName)
+                        .focused($viewModel.form.focus, equals: .fullName)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.words)
-                        .environment(\.controlStatus, model.form.fullName.status)
+                        .environment(\.controlStatus, viewModel.form.fullName.status)
                         .submitLabel(.next)
-                        .focused($model.form.focus, equals: .fullName)
+                        .focused($viewModel.form.focus, equals: .fullName)
                         .onSubmit(of: .text) {
-                            model.onSubmit(formFieldName: .fullName)
+                            viewModel.onSubmit(formFieldName: .fullName)
                         }
-                    FormField(secureText: $model.form.newPassword.value,
-                              isRevealed: $model.form.newPassword.isRedacted,
+                    FormField(secureText: $viewModel.form.newPassword.value,
+                              isRevealed: $viewModel.form.newPassword.isRedacted,
                               placeholder: .l10n.newAccountPasswordPlaceholder)
-                        .focused($model.form.focus, equals: .newPassword)
+                        .focused($viewModel.form.focus, equals: .newPassword)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.never)
-                        .environment(\.controlStatus, model.form.newPassword.status)
+                        .environment(\.controlStatus, viewModel.form.newPassword.status)
                         .submitLabel(.join)
-                        .focused($model.form.focus, equals: .newPassword)
+                        .focused($viewModel.form.focus, equals: .newPassword)
                         .onSubmit(of: .text) {
-                            model.onSubmit(formFieldName: .newPassword)
+                            viewModel.onSubmit(formFieldName: .newPassword)
                         }
                 }
                 Spacer()
                 Button {
-                    model.onInteraction(button: .signUpButton)
+                    viewModel.onInteraction(button: .signUpButton)
                 } label: {
                     Text(.l10n.newAccountSignUp)
                 }
-                .disabled(!model.form.areSignUpCredentialsValid)
+                .disabled(!viewModel.form.areSignUpCredentialsValid)
                 Button(role: .cancel) {
-                    model.onInteraction(button: .towardsLogInButton)
+                    viewModel.onInteraction(button: .towardsLogInButton)
                 } label: {
                     Text(.l10n.newAccountLogIn)
                 }
             }
-            .animation(.easeInOut, value: model.form.areSignUpCredentialsValid)
+            .animation(.easeInOut, value: viewModel.form.areSignUpCredentialsValid)
         }
     }
 }
@@ -66,7 +66,7 @@ private struct NewAccountViewSample: View {
     @StateObject private var _model: OnboardingViewModel = .init()
 
     var body: some View {
-        NewAccountView(model: _model)
+        NewAccountView(viewModel: _model)
     }
 }
 

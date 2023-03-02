@@ -29,7 +29,18 @@ public protocol StructuredStorageProtocol {
     @discardableResult func delete<Q>(query: Q) async throws -> [Q.Value] where Q: StructuredStorageQuery
 }
 
-public actor StructuredStorage: StructuredStorageProtocol {
+private struct StructuredStorageServiceKey: ServiceKey {
+    static var defaultValue: StructuredStorageProtocol = StructuredStorage()
+}
+
+public extension Service.Repository {
+    var structuredStorage: StructuredStorageProtocol {
+        get { self[StructuredStorageServiceKey.self] }
+        set { self[StructuredStorageServiceKey.self] = newValue }
+    }
+}
+
+private actor StructuredStorage: StructuredStorageProtocol {
     private let _persistentContainer: NSPersistentContainer
 
     init() {

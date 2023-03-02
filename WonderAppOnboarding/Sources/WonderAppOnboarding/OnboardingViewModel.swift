@@ -30,7 +30,6 @@ enum FormFieldName: Codable, Hashable, CaseIterable {
 enum ButtonName {
     case towardsAskEmail
     case towardsAskPassword
-    case towardsSuggestions
     case logInButton
     case signUpButton
     case locateMeButton
@@ -39,7 +38,7 @@ enum ButtonName {
     case towardsLogInButton
 }
 
-struct FormFieldModel {
+struct FormFieldViewModel {
     var value: String {
         didSet {
             validateContinuously()
@@ -83,11 +82,11 @@ struct FormFieldModel {
     }
 }
 
-struct FormModel {
-    var email: FormFieldModel
-    var fullName: FormFieldModel
-    var password: FormFieldModel
-    var newPassword: FormFieldModel
+struct FormViewModel {
+    var email: FormFieldViewModel
+    var fullName: FormFieldViewModel
+    var password: FormFieldViewModel
+    var newPassword: FormFieldViewModel
     var focus: FormFieldName? {
         didSet {
             if let oldValue, oldValue != focus {
@@ -99,10 +98,10 @@ struct FormModel {
         }
     }
 
-    init(email: FormFieldModel = .init(),
-         fullName: FormFieldModel = .init(),
-         password: FormFieldModel = .init(),
-         newPassword: FormFieldModel = .init(),
+    init(email: FormFieldViewModel = .init(),
+         fullName: FormFieldViewModel = .init(),
+         password: FormFieldViewModel = .init(),
+         newPassword: FormFieldViewModel = .init(),
          focus: FormFieldName? = nil) {
         self.email = email
         self.fullName = fullName
@@ -116,7 +115,7 @@ struct FormModel {
         self.newPassword.validator = inputValidator.validate(password:)
     }
 
-    func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldModel> {
+    func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldViewModel> {
         switch fieldName {
         case .email:
             return \.email
@@ -162,9 +161,16 @@ private extension KeyValueStorageQuery where Self == OnboardingViewModelStorageQ
     static var onboardingViewModel: OnboardingViewModelStorageQuery { OnboardingViewModelStorageQuery() }
 }
 
+private enum OnboardingViewModelTask {
+    case save
+    case logIn
+    case logOut
+    case signUp
+}
+
 @MainActor
-final class OnboardingViewModel: ObservableObject {
-    @Published var form: FormModel = .init() {
+public final class OnboardingViewModel: ObservableObject {
+    @Published var form: FormViewModel = .init() {
         didSet {
             _onPersistentFieldChange()
         }
@@ -183,9 +189,13 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     @Published var isReady: Bool = false
+    @Published var toastMessage: String?
 
-    private var _saveTask: Task<Void, Error>?
-    @Service(\.storageService) private var _storageService
+    private var _taskPlanner: TaskPlanner<OnboardingViewModelTask> = .init()
+    @Service(\.keyValueStorage) private var _keyValueStorage
+    @Service(\.authService) private var _authService
+
+    public init() {}
 
     func onPostAppear(fragment: FragmentName) {
         switch fragment {
@@ -208,12 +218,20 @@ final class OnboardingViewModel: ObservableObject {
             } else {
                 path.append(.askEmail)
             }
+        case .towardsAskPassword:
+            path.append(.askPassword)
+        case .logInButton:
+            _performLogIn()
+        case .signUpButton:
+            _performSignUp()
+        case .locateMeButton:
+            break
+        case .skipLocateMeButton:
+            path.append(.suggestions)
         case .towardsSignUpButton:
             path.append(.newAccount)
         case .towardsLogInButton:
             path.append(.askPassword)
-        default:
-            break
         }
     }
 
@@ -228,11 +246,11 @@ final class OnboardingViewModel: ObservableObject {
             form.focus = .newPassword
         case .password:
             if form.areLogInCredentialsValid {
-                // TODO: Log in
+                _performLogIn()
             }
         case .newPassword:
             if form.areSignUpCredentialsValid {
-                // TODO: Sign up
+                _performSignUp()
             }
         }
     }
@@ -243,9 +261,9 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     private func _onPersistentFieldChange() {
-        _saveTask?.cancel()
+        _taskPlanner.cancel(.save)
 
-        _saveTask = Task { [weak self] in
+        _taskPlanner.perform(.save) { [weak self] in
             try await Task.sleep(for: .seconds(1))
             try Task.checkCancellation()
             await self?._save()
@@ -259,7 +277,7 @@ final class OnboardingViewModel: ObservableObject {
                                                                 welcomePage: welcomePage,
                                                                 focus: form.focus)
         do {
-            try await _storageService.create(query: .onboardingViewModel, value: persistentViewModel)
+            try await _keyValueStorage.create(query: .onboardingViewModel, value: persistentViewModel)
         } catch {
             assertionFailure()
             // TODO: Log
@@ -267,7 +285,7 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     private func _attemptToRestore() async {
-        guard let persistentViewModel = try? await _storageService.read(query: .onboardingViewModel) else {
+        guard let persistentViewModel = try? await _keyValueStorage.read(query: .onboardingViewModel) else {
             return
         }
 
@@ -285,5 +303,31 @@ final class OnboardingViewModel: ObservableObject {
         path = persistentViewModel.path
         welcomePage = persistentViewModel.welcomePage
         form.focus = persistentViewModel.focus
+    }
+
+    private func _performLogIn() {
+        _taskPlanner.perform(.logIn) { [unowned self] in
+            do {
+                try await _authService.logIn(email: form.email.value,
+                                             password: form.email.value)
+            } catch let error as AuthServiceError {
+                toastMessage = error.localizedDescription
+            } catch {
+                toastMessage = .l10n.errorGeneric
+            }
+        }
+    }
+
+    private func _performSignUp() {
+        _taskPlanner.perform(.signUp) { [unowned self] in
+            do {
+                try await _authService.signUp(fullName: form.fullName.value,
+                                              newPassword: form.newPassword.value)
+            } catch let error as AuthServiceError {
+                toastMessage = error.localizedDescription
+            } catch {
+                toastMessage = .l10n.errorGeneric
+            }
+        }
     }
 }

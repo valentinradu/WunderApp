@@ -9,60 +9,77 @@ import SwiftUI
 import WonderAppDesignSystem
 
 private struct OnboardingFragmentView: View {
-    @ObservedObject var model: OnboardingViewModel
+    @ObservedObject var viewModel: OnboardingViewModel
     let fragment: FragmentName
 
     var body: some View {
         Group {
             switch fragment {
             case .main:
-                OnboardingFragmentView(model: model, fragment: .welcome)
+                OnboardingFragmentView(viewModel: viewModel, fragment: .welcome)
                     .navigationDestination(for: FragmentName.self) { fragment in
-                        OnboardingFragmentView(model: model, fragment: fragment)
+                        OnboardingFragmentView(viewModel: viewModel, fragment: fragment)
                     }
             case .welcome:
-                WelcomeView(model: model)
+                WelcomeView(viewModel: viewModel)
             case .askEmail:
-                AskEmailView(model: model)
+                AskEmailView(viewModel: viewModel)
             case .askPassword:
-                AskPasswordView(model: model)
+                AskPasswordView(viewModel: viewModel)
             case .newAccount:
-                NewAccountView(model: model)
+                NewAccountView(viewModel: viewModel)
             case .locateUser:
-                LocateAccountView(model: model)
+                LocateAccountView(viewModel: viewModel)
             case .suggestions:
                 EmptyView()
             }
         }
+        .toast($viewModel.toastMessage) { message in
+            Text(verbatim: message)
+                .frame(greedy: .horizontal)
+                .padding(.ds.d1)
+                .background {
+                    RoundedRectangle(cornerRadius: .ds.r1)
+                        .fill(Color.ds.oceanBlue400)
+                }
+                .foregroundColor(.ds.white)
+        }
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            model.onPostAppear(fragment: fragment)
+            viewModel.onPostAppear(fragment: fragment)
         }
     }
 }
 
 public struct OnboardingView: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
+    @ObservedObject private var _viewModel: OnboardingViewModel
 
-    public init() {}
+    public init(viewModel: OnboardingViewModel) {
+        _viewModel = viewModel
+    }
 
     public var body: some View {
         Group {
-            if _model.isReady {
-                NavigationStack(path: $_model.path) {
-                    OnboardingFragmentView(model: _model, fragment: .main)
+            if _viewModel.isReady {
+                NavigationStack(path: $_viewModel.path) {
+                    OnboardingFragmentView(viewModel: _viewModel, fragment: .main)
                 }
             }
         }
         .task {
-            await _model.prepare()
+            await _viewModel.prepare()
         }
     }
 }
 
 private struct OnboardingViewSample: View {
+    @StateObject private var _viewModel: OnboardingViewModel = .init()
+
     var body: some View {
-        OnboardingView()
+        OnboardingView(viewModel: _viewModel)
+            .onAppear {
+                _viewModel.toastMessage = .samples.paragraph
+            }
     }
 }
 
