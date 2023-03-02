@@ -144,7 +144,7 @@ struct FormModel {
     }
 }
 
-struct PersistentOnboardingViewModel: Codable, Sendable {
+struct PersistentOnboardingViewModel: Codable, Sendable, Hashable {
     let email: String
     let fullName: String
     let path: [FragmentName]
@@ -152,14 +152,14 @@ struct PersistentOnboardingViewModel: Codable, Sendable {
     let focus: FormFieldName?
 }
 
-private struct OnboardingViewModelStorageKey: KeyValueStorageKey {
+private struct OnboardingViewModelStorageQuery: KeyValueStorageQuery {
     typealias Value = PersistentOnboardingViewModel
-    let trait: StorageKeyValueQueryTrait = .heavyweight
+    let trait: KeyValueStorageQueryTrait = .heavyweight
     let key: String = "Onboarding.viewmodel"
 }
 
-private extension KeyValueStorageKey where Self == OnboardingViewModelStorageKey {
-    static var onboardingViewModel: OnboardingViewModelStorageKey { OnboardingViewModelStorageKey() }
+private extension KeyValueStorageQuery where Self == OnboardingViewModelStorageQuery {
+    static var onboardingViewModel: OnboardingViewModelStorageQuery { OnboardingViewModelStorageQuery() }
 }
 
 @MainActor
@@ -253,13 +253,13 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     private func _save() async {
-        let persistentModel = PersistentOnboardingViewModel(email: form.email.value,
-                                                            fullName: form.fullName.value,
-                                                            path: path,
-                                                            welcomePage: welcomePage,
-                                                            focus: form.focus)
+        let persistentViewModel = PersistentOnboardingViewModel(email: form.email.value,
+                                                                fullName: form.fullName.value,
+                                                                path: path,
+                                                                welcomePage: welcomePage,
+                                                                focus: form.focus)
         do {
-            try await _storageService.update(query: .onboardingViewModel, value: persistentModel)
+            try await _storageService.create(query: .onboardingViewModel, value: persistentViewModel)
         } catch {
             assertionFailure()
             // TODO: Log
@@ -267,23 +267,23 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     private func _attemptToRestore() async {
-        guard let persistentModel = try? await _storageService.read(query: .onboardingViewModel) else {
+        guard let persistentViewModel = try? await _storageService.read(query: .onboardingViewModel) else {
             return
         }
 
         let validator = InputValidator()
-        form.email = .init(value: persistentModel.email,
+        form.email = .init(value: persistentViewModel.email,
                            status: .idle,
                            isRedacted: false,
                            validator: validator.validate(email:))
-        form.fullName = .init(value: persistentModel.fullName,
+        form.fullName = .init(value: persistentViewModel.fullName,
                               status: .idle,
                               isRedacted: false,
                               validator: validator.validate(name:))
         form.validate()
 
-        path = persistentModel.path
-        welcomePage = persistentModel.welcomePage
-        form.focus = persistentModel.focus
+        path = persistentViewModel.path
+        welcomePage = persistentViewModel.welcomePage
+        form.focus = persistentViewModel.focus
     }
 }

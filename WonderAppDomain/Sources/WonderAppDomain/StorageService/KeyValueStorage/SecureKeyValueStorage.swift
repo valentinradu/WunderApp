@@ -9,10 +9,22 @@ import Foundation
 import Security
 
 actor SecureKeyValueStorage: KeyValueStorageProtocol {
-    func create<Q>(query: Q) async throws -> Q.Value where Q: KeyValueStorageQuery {
-        let value = query.defaultValue
-        try _write(query: query, value: value)
-        return value
+    func create<Q>(query: Q, value: Q.Value) async throws where Q: KeyValueStorageQuery {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(value)
+
+        let secureQuery = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: query.key,
+            kSecValueData: data
+        ] as [String: Any]
+
+        SecItemDelete(secureQuery as CFDictionary)
+        let status = SecItemAdd(secureQuery as CFDictionary, nil)
+
+        if status != noErr {
+            throw KeyValueStorageError.failedToSaveToUnderlyingStorage(key: query.key)
+        }
     }
 
     func read<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery {
@@ -40,12 +52,12 @@ actor SecureKeyValueStorage: KeyValueStorageProtocol {
     func update<Q>(query: Q, perform: (inout Q.Value) -> Void) async throws where Q: KeyValueStorageQuery {
         let value = try await read(query: query)
         guard let value else {
-            throw KeyValueStorageError.failedToUpdateMissingItem(query: query)
+            throw KeyValueStorageError.failedToUpdateMissingItem(key: query.key)
         }
 
         var newValue = value
         perform(&newValue)
-        try _write(query: query, value: newValue)
+        try await create(query: query, value: value)
     }
 
     @discardableResult func delete<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery {
@@ -62,23 +74,5 @@ actor SecureKeyValueStorage: KeyValueStorageProtocol {
         SecItemDelete(query as CFDictionary)
 
         return value
-    }
-
-    private func _write<Q>(query: Q, value: Q.Value) throws where Q: KeyValueStorageQuery {
-        let encoder = JSONEncoder()
-        let data = try encoder.encode(value)
-
-        let secureQuery = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrAccount: query.key,
-            kSecValueData: data
-        ] as [String: Any]
-
-        SecItemDelete(secureQuery as CFDictionary)
-        let status = SecItemAdd(secureQuery as CFDictionary, nil)
-
-        if status != noErr {
-            throw KeyValueStorageError.failedToSaveToUnderlyingStorage(query: query)
-        }
     }
 }

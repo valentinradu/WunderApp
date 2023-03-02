@@ -10,9 +10,8 @@ import Foundation
 actor EphemeralKeyValueStorage: KeyValueStorageProtocol {
     private var _rawStore: [String: Any] = [:]
 
-    func create<Q>(query: Q) async throws -> Q.Value where Q: KeyValueStorageQuery {
-        _rawStore[query.key] = query.defaultValue
-        return query.defaultValue
+    func create<Q>(query: Q, value: Q.Value) async throws where Q: KeyValueStorageQuery {
+        _rawStore[query.key] = value
     }
 
     func read<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery {
@@ -23,7 +22,7 @@ actor EphemeralKeyValueStorage: KeyValueStorageProtocol {
         }
 
         guard let value = value as? Q.Value else {
-            throw KeyValueStorageError.failedToDecodeUnderlyingStorageValue(query: query)
+            throw KeyValueStorageError.failedToDecodeUnderlyingStorageValue(key: query.key)
         }
 
         return value
@@ -32,7 +31,7 @@ actor EphemeralKeyValueStorage: KeyValueStorageProtocol {
     func update<Q>(query: Q, perform: (inout Q.Value) -> Void) async throws where Q: KeyValueStorageQuery {
         let value = try await read(query: query)
         guard let value else {
-            throw KeyValueStorageError.failedToUpdateMissingItem(query: query)
+            throw KeyValueStorageError.failedToUpdateMissingItem(key: query.key)
         }
 
         var newValue = value
