@@ -55,7 +55,7 @@ public struct DesignSystemGrid {
     public let bpt: CGFloat = 1
     /// Border 2 point
     public let b1: CGFloat = 3
-    
+
     // Radius
     /// Radius 6 point
     public let r1: CGFloat = 6
