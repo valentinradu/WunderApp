@@ -22,8 +22,14 @@ public protocol GuestServiceProtocol {
     func isEmailAvailable(_ value: String) async throws -> Bool
 }
 
-private actor GuestService: GuestServiceProtocol {
+public actor GuestService: GuestServiceProtocol {
     public func isEmailAvailable(_ value: String) async throws -> Bool {
-        false
+        fatalError("Not implemented")
+    }
+}
+
+public actor GuestServiceSample: GuestServiceProtocol {
+    public func isEmailAvailable(_ value: String) async throws -> Bool {
+        !value.starts(with: "unavailable")
     }
 }

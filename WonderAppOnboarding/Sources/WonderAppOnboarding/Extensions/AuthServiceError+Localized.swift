@@ -12,6 +12,10 @@ extension AuthServiceError {
         switch self {
         case .wrongEmailOrPassword:
             return .l10n.errorWrongEmailOrPassword
+        case .invalidSignUpFields:
+            return .l10n.errorInvalidSignUpFields
+        case .unauthenticated:
+            return .l10n.errorGeneric
         }
     }
 }
