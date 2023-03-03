@@ -12,16 +12,10 @@ private struct AuthServiceKey: ServiceKey {
 }
 
 public extension Service.Repository {
-    var authService: AuthServiceProtocol {
+    var auth: AuthServiceProtocol {
         set { self[AuthServiceKey.self] = newValue }
         get { self[AuthServiceKey.self] }
     }
-}
-
-public enum AuthServiceError: Error {
-    case wrongEmailOrPassword
-    case invalidSignUpFields
-    case unauthenticated
 }
 
 public protocol AuthServiceProtocol {
@@ -41,23 +35,5 @@ public actor AuthService: AuthServiceProtocol {
 
     public func signUp(fullName: String, newPassword: String) async throws {
         fatalError("Not implemented")
-    }
-}
-
-public actor AuthServiceSample: AuthServiceProtocol {
-    @Service(\.keyValueStorage) private var _keyValueStorage
-
-    public func logIn(email: String, password: String) async throws {
-        if password.starts(with: "wrong") {
-            throw AuthServiceError.wrongEmailOrPassword
-        }
-    }
-
-    public func logOut() async throws {}
-
-    public func signUp(fullName: String, newPassword: String) async throws {
-        if newPassword.starts(with: "wrong") {
-            throw AuthServiceError.invalidSignUpFields
-        }
     }
 }

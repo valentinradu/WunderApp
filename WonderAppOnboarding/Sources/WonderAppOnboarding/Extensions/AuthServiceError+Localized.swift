@@ -7,14 +7,14 @@
 
 import WonderAppDomain
 
-extension AuthServiceError {
+extension ServiceError {
     var localizedDescription: String {
         switch self {
         case .wrongEmailOrPassword:
             return .l10n.errorWrongEmailOrPassword
         case .invalidSignUpFields:
             return .l10n.errorInvalidSignUpFields
-        case .unauthenticated:
+        case .unauthorized:
             return .l10n.errorGeneric
         }
     }

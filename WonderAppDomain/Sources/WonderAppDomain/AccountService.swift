@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct UserProfile {
-    public struct ID: Equatable {
+public struct UserProfile: Codable, Sendable {
+    public struct ID: Codable, Sendable, Equatable {
         private let _rawValue: String
         public init(_ rawValue: String) {
             _rawValue = rawValue
@@ -23,24 +23,19 @@ public struct AccountServiceKey: ServiceKey {
     public static var defaultValue: AccountServiceProtocol = AccountService()
 }
 
+public extension Service.Repository {
+    var account: AccountServiceProtocol {
+        set { self[AccountServiceKey.self] = newValue }
+        get { self[AccountServiceKey.self] }
+    }
+}
+
 public protocol AccountServiceProtocol {
     func getUserProfile() async throws -> UserProfile
 }
 
-public actor AccountService: AccountServiceProtocol {
+private actor AccountService: AccountServiceProtocol {
     public func getUserProfile() async throws -> UserProfile {
         fatalError("Not implemented")
-    }
-}
-
-public actor AccountServiceSample: AccountServiceProtocol {
-    public var shouldFailWithError: Error?
-
-    public func getUserProfile() async throws -> UserProfile {
-        if let error = shouldFailWithError {
-            throw error
-        } else {
-            return UserProfile(id: .init("0"), name: "John Appleseed")
-        }
     }
 }

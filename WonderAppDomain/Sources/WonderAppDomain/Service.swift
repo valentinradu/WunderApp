@@ -12,6 +12,12 @@ public protocol ServiceKey {
     static var defaultValue: Value { get set }
 }
 
+public enum ServiceError: Error, Codable, Sendable {
+    case unauthorized
+    case wrongEmailOrPassword
+    case invalidSignUpFields
+}
+
 @propertyWrapper
 public struct Service<Value> {
     public let wrappedValue: Value

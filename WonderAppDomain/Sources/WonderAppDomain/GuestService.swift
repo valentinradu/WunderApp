@@ -12,7 +12,7 @@ private struct GuestServiceKey: ServiceKey {
 }
 
 public extension Service.Repository {
-    var guestService: GuestServiceProtocol {
+    var guest: GuestServiceProtocol {
         set { self[GuestServiceKey.self] = newValue }
         get { self[GuestServiceKey.self] }
     }
@@ -25,11 +25,5 @@ public protocol GuestServiceProtocol {
 public actor GuestService: GuestServiceProtocol {
     public func isEmailAvailable(_ value: String) async throws -> Bool {
         fatalError("Not implemented")
-    }
-}
-
-public actor GuestServiceSample: GuestServiceProtocol {
-    public func isEmailAvailable(_ value: String) async throws -> Bool {
-        !value.starts(with: "unavailable")
     }
 }

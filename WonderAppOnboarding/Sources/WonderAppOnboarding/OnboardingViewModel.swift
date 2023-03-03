@@ -193,7 +193,7 @@ public final class OnboardingViewModel: ObservableObject {
 
     private var _taskPlanner: TaskPlanner<OnboardingViewModelTask> = .init()
     @Service(\.keyValueStorage) private var _keyValueStorage
-    @Service(\.authService) private var _authService
+    @Service(\.auth) private var _authService
 
     public init() {}
 
@@ -310,7 +310,7 @@ public final class OnboardingViewModel: ObservableObject {
             do {
                 try await _authService.logIn(email: form.email.value,
                                              password: form.email.value)
-            } catch let error as AuthServiceError {
+            } catch let error as ServiceError {
                 toastMessage = error.localizedDescription
             } catch {
                 toastMessage = .l10n.errorGeneric
@@ -323,7 +323,7 @@ public final class OnboardingViewModel: ObservableObject {
             do {
                 try await _authService.signUp(fullName: form.fullName.value,
                                               newPassword: form.newPassword.value)
-            } catch let error as AuthServiceError {
+            } catch let error as ServiceError {
                 toastMessage = error.localizedDescription
             } catch {
                 toastMessage = .l10n.errorGeneric
