@@ -8,7 +8,7 @@
 import Foundation
 import WonderAppExtensions
 
-public class GuestServiceMock: Codable, GuestServiceProtocol {
+public final class GuestServiceMock: Codable, GuestServiceProtocol {
     public var isEmailAvailableResult: MockedResult<Bool, ServiceError> = .success(value: true)
 
     public func isEmailAvailable(_ value: String) async throws -> Bool {

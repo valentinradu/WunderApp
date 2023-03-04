@@ -7,13 +7,13 @@
 
 import Foundation
 
-public enum KeyValueStorageQueryTrait {
+public enum KeyValueStorageQueryTrait: Codable {
     case heavyweight
     case secure
     case ephemeral
 }
 
-public protocol KeyValueStorageQuery {
+public protocol KeyValueStorageQuery: Codable {
     associatedtype Value: Codable
     var trait: KeyValueStorageQueryTrait { get }
     var key: String { get }
@@ -22,7 +22,7 @@ public protocol KeyValueStorageQuery {
 public protocol KeyValueStorageProtocol {
     func create<Q>(query: Q, value: Q.Value) async throws where Q: KeyValueStorageQuery
     func read<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery
-    func update<Q>(query: Q, perform: (inout Q.Value) -> Void) async throws where Q: KeyValueStorageQuery
+    func update<Q>(query: Q, perform: @escaping (inout Q.Value) -> Void) async throws where Q: KeyValueStorageQuery
     @discardableResult func delete<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery
 }
 
@@ -58,7 +58,8 @@ private actor KeyValueStorage: KeyValueStorageProtocol {
         return try await storage.read(query: query)
     }
 
-    public func update<Q>(query: Q, perform: (inout Q.Value) -> Void) async throws where Q: KeyValueStorageQuery {
+    public func update<Q>(query: Q, perform: @escaping (inout Q.Value) -> Void) async throws
+        where Q: KeyValueStorageQuery {
         let storage = _underlyingKeyValueStorage(for: query)
         try await storage.update(query: query, perform: perform)
     }

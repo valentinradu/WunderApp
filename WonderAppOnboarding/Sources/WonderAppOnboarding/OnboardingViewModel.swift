@@ -153,8 +153,8 @@ struct PersistentOnboardingViewModel: Codable, Sendable, Hashable {
 
 private struct OnboardingViewModelStorageQuery: KeyValueStorageQuery {
     typealias Value = PersistentOnboardingViewModel
-    let trait: KeyValueStorageQueryTrait = .heavyweight
-    let key: String = "Onboarding.viewmodel"
+    private(set) var trait: KeyValueStorageQueryTrait = .heavyweight
+    private(set) var key: String = "Onboarding.viewmodel"
 }
 
 private extension KeyValueStorageQuery where Self == OnboardingViewModelStorageQuery {

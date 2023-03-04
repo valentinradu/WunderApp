@@ -37,7 +37,7 @@ public extension Array where Element == Place {
     ]
 }
 
-public class PlacesServiceMock: Codable, PlacesServiceProtocol {
+public final class PlacesServiceMock: Codable, PlacesServiceProtocol {
     public var placesResult: MockedResult<[Place], ServiceError> = .success(value: .mocked, after: 0)
 
     public func findSuggestionsForUser() async throws -> [Place] {

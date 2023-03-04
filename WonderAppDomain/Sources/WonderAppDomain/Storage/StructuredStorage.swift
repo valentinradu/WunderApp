@@ -16,8 +16,8 @@ private extension NSManagedObjectContext {
     }
 }
 
-public protocol StructuredStorageQuery {
-    associatedtype Value: NSManagedObject
+public protocol StructuredStorageQuery: Hashable, Codable {
+    associatedtype Value: NSManagedObject, Codable
     var request: NSFetchRequest<Value> { get }
     func defaultValue(context: NSManagedObjectContext) -> Value
 }
