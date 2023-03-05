@@ -7,14 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B065CD1E29B3FB4500F7E207 /* WonderAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */; };
+		B065CD2729B40F2100F7E207 /* WonderAppExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = B065CD2629B40F2100F7E207 /* WonderAppExtensions */; };
 		B08E014B29A277D1004A3C9F /* WonderAppOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = B08E014A29A277D1004A3C9F /* WonderAppOnboarding */; };
 		B0C410A0297B65E9001B694C /* WonderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C4109F297B65E9001B694C /* WonderApp.swift */; };
 		B0C410A4297B65EA001B694C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A3297B65EA001B694C /* Assets.xcassets */; };
 		B0C410A7297B65EA001B694C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A6297B65EA001B694C /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B065CD2129B3FB4500F7E207 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B0C41094297B65E9001B694C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0C4109B297B65E9001B694C;
+			remoteInfo = WonderApp;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		B05CEFA729ACF3110058916B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B065CD1B29B3FB4500F7E207 /* WonderAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WonderAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WonderAppUITests.swift; sourceTree = "<group>"; };
 		B0C4109C297B65E9001B694C /* WonderApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WonderApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0C4109F297B65E9001B694C /* WonderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WonderApp.swift; sourceTree = "<group>"; };
 		B0C410A3297B65EA001B694C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -22,6 +36,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B065CD1829B3FB4500F7E207 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B065CD2729B40F2100F7E207 /* WonderAppExtensions in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B0C41099297B65E9001B694C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -40,10 +62,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		B065CD1C29B3FB4500F7E207 /* WonderAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */,
+			);
+			path = WonderAppUITests;
+			sourceTree = "<group>";
+		};
 		B0C41093297B65E9001B694C = {
 			isa = PBXGroup;
 			children = (
 				B0C4109E297B65E9001B694C /* WonderApp */,
+				B065CD1C29B3FB4500F7E207 /* WonderAppUITests */,
 				B0C4109D297B65E9001B694C /* Products */,
 				B063613329886C2700E000FA /* Frameworks */,
 			);
@@ -53,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				B0C4109C297B65E9001B694C /* WonderApp.app */,
+				B065CD1B29B3FB4500F7E207 /* WonderAppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +111,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B065CD1A29B3FB4500F7E207 /* WonderAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B065CD2529B3FB4500F7E207 /* Build configuration list for PBXNativeTarget "WonderAppUITests" */;
+			buildPhases = (
+				B065CD1729B3FB4500F7E207 /* Sources */,
+				B065CD1829B3FB4500F7E207 /* Frameworks */,
+				B065CD1929B3FB4500F7E207 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B065CD2229B3FB4500F7E207 /* PBXTargetDependency */,
+			);
+			name = WonderAppUITests;
+			packageProductDependencies = (
+				B065CD2629B40F2100F7E207 /* WonderAppExtensions */,
+			);
+			productName = WonderAppUITests;
+			productReference = B065CD1B29B3FB4500F7E207 /* WonderAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		B0C4109B297B65E9001B694C /* WonderApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B0C410AA297B65EA001B694C /* Build configuration list for PBXNativeTarget "WonderApp" */;
@@ -109,6 +162,10 @@
 				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
+					B065CD1A29B3FB4500F7E207 = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = B0C4109B297B65E9001B694C;
+					};
 					B0C4109B297B65E9001B694C = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -128,11 +185,19 @@
 			projectRoot = "";
 			targets = (
 				B0C4109B297B65E9001B694C /* WonderApp */,
+				B065CD1A29B3FB4500F7E207 /* WonderAppUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B065CD1929B3FB4500F7E207 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B0C4109A297B65E9001B694C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -145,6 +210,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B065CD1729B3FB4500F7E207 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B065CD1E29B3FB4500F7E207 /* WonderAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B0C41098297B65E9001B694C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -155,7 +228,49 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		B065CD2229B3FB4500F7E207 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B0C4109B297B65E9001B694C /* WonderApp */;
+			targetProxy = B065CD2129B3FB4500F7E207 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		B065CD2329B3FB4500F7E207 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J3QR77E8B7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vansurf.WonderAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WonderApp;
+			};
+			name = Debug;
+		};
+		B065CD2429B3FB4500F7E207 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J3QR77E8B7;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vansurf.WonderAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WonderApp;
+			};
+			name = Release;
+		};
 		B0C410A8297B65EA001B694C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -335,6 +450,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B065CD2529B3FB4500F7E207 /* Build configuration list for PBXNativeTarget "WonderAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B065CD2329B3FB4500F7E207 /* Debug */,
+				B065CD2429B3FB4500F7E207 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B0C41097297B65E9001B694C /* Build configuration list for PBXProject "WonderApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -356,6 +480,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B065CD2629B40F2100F7E207 /* WonderAppExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WonderAppExtensions;
+		};
 		B08E014A29A277D1004A3C9F /* WonderAppOnboarding */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WonderAppOnboarding;

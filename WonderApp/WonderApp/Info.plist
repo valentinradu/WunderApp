@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>WonderApp uses the local network for debugging</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -12,6 +14,10 @@
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>com.wonderapp.onboarding.activity.model</string>
+	</array>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_peertunnel._tcp</string>
 	</array>
 </dict>
 </plist>

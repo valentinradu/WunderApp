@@ -8,7 +8,7 @@
 import Foundation
 import WonderAppExtensions
 
-public struct Place: Codable, Sendable {
+public struct Place: Codable, @unchecked Sendable {
     public struct ID: Codable, Sendable, Equatable {
         private let _rawValue: String
         public init(_ rawValue: String) {
