@@ -12,16 +12,27 @@ import WonderAppOnboarding
 @main
 struct WonderApp: App {
     @State private var _message: String?
-    @State private var _connection: PeerConnection?
     var body: some Scene {
         WindowGroup {
             let viewModel = OnboardingViewModel()
             OnboardingView(viewModel: viewModel)
+                .overlay {
+                    if let message = _message {
+                        Text(verbatim: message)
+                    }
+                }
                 .task {
                     do {
-                        let browser = PeerBrowser(target: "my-first-test")
-                        try await browser.discover()
-                        _connection = try await browser.waitForConnection()
+                        let suppliant = PeerSuppliant<MockPeerMessage>(target: "my-first-test", password: "pass")
+                        await suppliant.discover()
+                        let connection = try await suppliant.waitForConnection()
+
+                        for await message in connection.messages.values {
+                            switch message.kind {
+                            case .test:
+                                _message = String(data: message.data, encoding: .utf8)!
+                            }
+                        }
                     } catch {
                         fatalError(error.localizedDescription)
                     }

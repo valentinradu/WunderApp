@@ -47,8 +47,7 @@ private actor StructuredStorage: StructuredStorageProtocol {
         _persistentContainer = NSPersistentContainer(name: "DomainModel")
         _persistentContainer.loadPersistentStores { description, error in
             if let error = error {
-                // TODO: Log
-                print(error)
+                assertionFailure(error.localizedDescription)
             }
         }
     }

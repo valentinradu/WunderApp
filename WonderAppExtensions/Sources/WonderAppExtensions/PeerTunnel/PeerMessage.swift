@@ -9,41 +9,40 @@ import Foundation
 import Network
 import os
 
-enum PeerMessageKind: UInt32 {
-    case invalid
-    case custom
-}
+public protocol PeerMessageKindProtocol: RawRepresentable where Self.RawValue == UInt32 {}
 
 private struct PeerMessageHeader {
-    let type: PeerMessageKind
+    let kind: UInt32
     let length: UInt32
 
-    init(type: PeerMessageKind, length: UInt32) {
-        self.type = type
+    init(kind: UInt32, length: UInt32) {
+        self.kind = kind
         self.length = length
     }
 
     init(_ buffer: UnsafeMutableRawBufferPointer) {
-        var tempType: UInt32 = 0
-        var tempLength: UInt32 = 0
-        withUnsafeMutableBytes(of: &tempType) { typePtr in
-            typePtr.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: 0),
+        var kind: UInt32 = 0
+        var length: UInt32 = 0
+
+        withUnsafeMutableBytes(of: &kind) { kindPtr in
+            kindPtr.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: 0),
                                                             count: MemoryLayout<UInt32>.size))
         }
-        withUnsafeMutableBytes(of: &tempLength) { lengthPtr in
+        withUnsafeMutableBytes(of: &length) { lengthPtr in
             lengthPtr
                 .copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!
                         .advanced(by: MemoryLayout<UInt32>.size),
                     count: MemoryLayout<UInt32>.size))
         }
-        type = PeerMessageKind(rawValue: tempType) ?? .invalid
-        length = tempLength
+
+        self.kind = kind
+        self.length = length
     }
 
     var encodedData: Data {
-        var tempType = type.rawValue
+        var tempKind = kind
         var tempLength = length
-        var data = Data(bytes: &tempType, count: MemoryLayout<UInt32>.size)
+        var data = Data(bytes: &tempKind, count: MemoryLayout<UInt32>.size)
         data.append(Data(bytes: &tempLength, count: MemoryLayout<UInt32>.size))
         return data
     }
@@ -54,10 +53,11 @@ private struct PeerMessageHeader {
 }
 
 class PeerMessageDefinition: NWProtocolFramerImplementation {
-    static let definition = NWProtocolFramer.Definition(implementation: PeerMessageDefinition.self)
+    static let definition: NWProtocolFramer.Definition = .init(implementation: PeerMessageDefinition.self)
+
     private let _logger: Logger = .init(subsystem: "com.peertunnel", category: "peer-message-framer")
 
-    static var label: String = "PeerMessageFramer"
+    static var label: String { "PeerMessageFramer" }
 
     required init(framer: NWProtocolFramer.Instance) {}
 
@@ -85,7 +85,7 @@ class PeerMessageDefinition: NWProtocolFramerImplementation {
                 return headerSize
             }
 
-            let message = NWProtocolFramer.Message(peerMessageKind: header.type)
+            let message = NWProtocolFramer.Message(kind: header.kind)
 
             if !framer.deliverInputNoCopy(length: Int(header.length),
                                           message: message,
@@ -101,8 +101,7 @@ class PeerMessageDefinition: NWProtocolFramerImplementation {
         messageLength: Int,
         isComplete: Bool
     ) {
-        let type = message.peerMessageKind
-        let header = PeerMessageHeader(type: type, length: UInt32(messageLength))
+        let header = PeerMessageHeader(kind: message.kind, length: UInt32(messageLength))
 
         framer.writeOutput(data: header.encodedData)
 
@@ -122,17 +121,21 @@ class PeerMessageDefinition: NWProtocolFramerImplementation {
     func cleanup(framer: NWProtocolFramer.Instance) {}
 }
 
+public struct PeerMessage<PeerMessageKind> where PeerMessageKind: PeerMessageKindProtocol {
+    public let kind: PeerMessageKind
+    public let data: Data
+}
+
 extension NWProtocolFramer.Message {
-    convenience init(peerMessageKind: PeerMessageKind) {
+    convenience init(kind: UInt32) {
         self.init(definition: PeerMessageDefinition.definition)
-        self["PeerMessageKind"] = peerMessageKind
+        self["MessageKind"] = kind
     }
 
-    var peerMessageKind: PeerMessageKind {
-        if let type = self["PeerMessageKind"] as? PeerMessageKind {
-            return type
-        } else {
-            return .invalid
+    var kind: UInt32 {
+        guard let value = self["MessageKind"] as? UInt32 else {
+            return 0
         }
+        return value
     }
 }

@@ -19,14 +19,16 @@ final class WonderAppUITests: XCTestCase {
 
     @MainActor
     func testExample() async throws {
-        let listener = try PeerListener(name: "my-first-test")
+        let clamant = try PeerClamant<MockPeerMessage>(name: "my-first-test", password: "pass")
 
         let app = XCUIApplication()
         app.launch()
 
-        try listener.listen()
-        let connection = try await listener.waitForConnection()
-        try await connection.send(value: "Helloo")
+        await clamant.listen()
+        let connection = try await clamant.waitForConnection()
+
+        let data = "Hello".data(using: .utf8)!
+        connection.send(kind: .test, data: data)
 
         try await Task.sleep(for: .seconds(30))
     }
