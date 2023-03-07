@@ -4,18 +4,9 @@
 //
 //  Created by Valentin Radu on 04/03/2023.
 //
+import AnyCodable
 import Foundation
 import WonderAppExtensions
-
-private extension KeyValueStorageQuery {
-    func toAnyCodable() -> AnyCodable {
-        do {
-            return try AnyCodable(self)
-        } catch {
-            fatalError(error.localizedDescription)
-        }
-    }
-}
 
 public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
     public enum Operation: Codable, Hashable {
@@ -28,7 +19,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
     private var _results: [Operation: [AnyCodable: AnyCodable]]
 
     public func create<Q>(query: Q, value: Q.Value) async throws where Q: KeyValueStorageQuery {
-        guard let result = _results[.create]?[query.toAnyCodable()] else {
+        guard let result = _results[.create]?[AnyCodable(query)] else {
             fatalError()
         }
 
@@ -40,7 +31,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
     }
 
     public func read<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery {
-        guard let result = _results[.read]?[query.toAnyCodable()] else {
+        guard let result = _results[.read]?[AnyCodable(query)] else {
             fatalError()
         }
 
@@ -53,7 +44,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
 
     public func update<Q>(query: Q, perform: @escaping (inout Q.Value) -> Void) async throws
         where Q: KeyValueStorageQuery {
-        guard let result = _results[.update]?[query.toAnyCodable()] else {
+        guard let result = _results[.update]?[AnyCodable(query)] else {
             fatalError()
         }
 
@@ -66,7 +57,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
     }
 
     @discardableResult public func delete<Q>(query: Q) async throws -> Q.Value? where Q: KeyValueStorageQuery {
-        guard let result = _results[.delete]?[query.toAnyCodable()] else {
+        guard let result = _results[.delete]?[AnyCodable(query)] else {
             fatalError()
         }
 
@@ -79,7 +70,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
 
     public func registerCreateResult<Q>(_ value: MockedEmptyResult<ServiceError>, for query: Q) throws
         where Q: KeyValueStorageQuery {
-        let newValues = try [AnyCodable(query): AnyCodable(value)]
+        let newValues = [AnyCodable(query): AnyCodable(value)]
         if let results = _results[.create] {
             _results[.create] = results
                 .merging(newValues, uniquingKeysWith: { _, b in b })
@@ -90,7 +81,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
 
     public func registerReadResults<Q>(_ value: MockedResult<Q.Value?, ServiceError>, for query: Q) throws
         where Q: KeyValueStorageQuery {
-        let newValues = try [AnyCodable(query): AnyCodable(value)]
+        let newValues = [AnyCodable(query): AnyCodable(value)]
         if let results = _results[.create] {
             _results[.read] = results
                 .merging(newValues, uniquingKeysWith: { _, b in b })
@@ -101,7 +92,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
 
     public func registerUpdateResults<Q>(_ value: MockedResult<Q.Value, ServiceError>, for query: Q) throws
         where Q: KeyValueStorageQuery {
-        let newValues = try [AnyCodable(query): AnyCodable(value)]
+        let newValues = [AnyCodable(query): AnyCodable(value)]
         if let results = _results[.create] {
             _results[.update] = results
                 .merging(newValues, uniquingKeysWith: { _, b in b })
@@ -112,7 +103,7 @@ public final class KeyValueStorageMock: Codable, KeyValueStorageProtocol {
 
     public func registerDeleteResults<Q>(_ value: MockedResult<Q.Value?, ServiceError>, for query: Q) throws
         where Q: KeyValueStorageQuery {
-        let newValues = try [AnyCodable(query): AnyCodable(value)]
+        let newValues = [AnyCodable(query): AnyCodable(value)]
         if let results = _results[.create] {
             _results[.delete] = results
                 .merging(newValues, uniquingKeysWith: { _, b in b })

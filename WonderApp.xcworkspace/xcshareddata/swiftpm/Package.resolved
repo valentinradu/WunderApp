@@ -8,6 +8,24 @@
         "revision" : "c8c33d947d8a1c883aa19fd24e14fd738b06e369",
         "version" : "3.3.2"
       }
+    },
+    {
+      "identity" : "swift-any-codable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/valentinradu/swift-any-codable.git",
+      "state" : {
+        "revision" : "d83fba3ae836b4d8430a9c53327dba8a02b149a2",
+        "version" : "0.0.1"
+      }
+    },
+    {
+      "identity" : "swift-peer-tunnel",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/valentinradu/swift-peer-tunnel.git",
+      "state" : {
+        "revision" : "c3b9dc0593730c9a8b9a90d94af6478b207df84b",
+        "version" : "0.0.1"
+      }
     }
   ],
   "version" : 2

@@ -14,6 +14,8 @@ public extension UserProfile {
 public struct AccountServiceMock: Codable, AccountServiceProtocol {
     public var getUserProfileResult: MockedResult<UserProfile, ServiceError> = .success(value: .mocked, after: 0)
 
+    public init() {}
+
     public func getUserProfile() async throws -> UserProfile {
         try await getUserProfileResult.unwrap()
     }

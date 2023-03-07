@@ -25,7 +25,7 @@ public struct AccountServiceKey: ServiceKey {
 
 public extension Service.Repository {
     var account: AccountServiceProtocol {
-        set { self[AccountServiceKey.self] = newValue }
+        nonmutating set { self[AccountServiceKey.self] = newValue }
         get { self[AccountServiceKey.self] }
     }
 }

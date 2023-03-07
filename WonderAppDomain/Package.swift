@@ -14,7 +14,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../WonderAppExtensions")
+        .package(path: "../WonderAppExtensions"),
+        .package(url: "https://github.com/valentinradu/swift-any-codable.git", from: .init(0, 0, 1))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -22,7 +23,8 @@ let package = Package(
         .target(
             name: "WonderAppDomain",
             dependencies: [
-                .byName(name: "WonderAppExtensions")
+                .byName(name: "WonderAppExtensions"),
+                .product(name: "AnyCodable", package: "swift-any-codable")
             ]
         ),
         .testTarget(

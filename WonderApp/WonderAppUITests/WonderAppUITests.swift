@@ -5,12 +5,17 @@
 //  Created by Valentin Radu on 04/03/2023.
 //
 
+import PeerTunnel
+import WonderAppDomain
 import WonderAppExtensions
 import XCTest
 
 final class WonderAppUITests: XCTestCase {
+    @Service(\.mocking) private var _mockingService
+
     override func setUp() async throws {
         continueAfterFailure = false
+        try await _mockingService.prepare()
     }
 
     override func tearDown() async throws {
@@ -19,16 +24,12 @@ final class WonderAppUITests: XCTestCase {
 
     @MainActor
     func testExample() async throws {
-        let clamant = try PeerClamant<MockPeerMessage>(name: "my-first-test", password: "pass")
-
         let app = XCUIApplication()
         app.launch()
 
-        await clamant.listen()
-        let connection = try await clamant.waitForConnection()
+        let accountService = AccountServiceMock()
 
-        let data = "Hello".data(using: .utf8)!
-        connection.send(kind: .test, data: data)
+        try await _mockingService.mock(service: .accountService, value: accountService)
 
         try await Task.sleep(for: .seconds(30))
     }

@@ -6,36 +6,26 @@
 //
 
 import SwiftUI
-import WonderAppExtensions
+import WonderAppDomain
 import WonderAppOnboarding
 
 @main
 struct WonderApp: App {
-    @State private var _message: String?
+//    #if TESTING
+    @Service(\.mocking) private var _mockingService
+//    #endif
     var body: some Scene {
         WindowGroup {
             let viewModel = OnboardingViewModel()
             OnboardingView(viewModel: viewModel)
-                .overlay {
-                    if let message = _message {
-                        Text(verbatim: message)
-                    }
-                }
                 .task {
+//                    #if TESTING
                     do {
-                        let suppliant = PeerSuppliant<MockPeerMessage>(target: "my-first-test", password: "pass")
-                        await suppliant.discover()
-                        let connection = try await suppliant.waitForConnection()
-
-                        for await message in connection.messages.values {
-                            switch message.kind {
-                            case .test:
-                                _message = String(data: message.data, encoding: .utf8)!
-                            }
-                        }
+                        try await _mockingService.awaitMocks()
                     } catch {
-                        fatalError(error.localizedDescription)
+                        assertionFailure(error.localizedDescription)
                     }
+//                    #endif
                 }
         }
     }

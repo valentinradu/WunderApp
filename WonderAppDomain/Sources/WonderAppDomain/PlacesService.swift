@@ -36,7 +36,7 @@ private struct PlacesServiceKey: ServiceKey {
 
 public extension Service.Repository {
     var places: PlacesServiceProtocol {
-        set { self[PlacesServiceKey.self] = newValue }
+        nonmutating set { self[PlacesServiceKey.self] = newValue }
         get { self[PlacesServiceKey.self] }
     }
 }

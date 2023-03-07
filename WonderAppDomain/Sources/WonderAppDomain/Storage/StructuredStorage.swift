@@ -36,7 +36,7 @@ private struct StructuredStorageServiceKey: ServiceKey {
 public extension Service.Repository {
     var structuredStorage: StructuredStorageProtocol {
         get { self[StructuredStorageServiceKey.self] }
-        set { self[StructuredStorageServiceKey.self] = newValue }
+        nonmutating set { self[StructuredStorageServiceKey.self] = newValue }
     }
 }
 

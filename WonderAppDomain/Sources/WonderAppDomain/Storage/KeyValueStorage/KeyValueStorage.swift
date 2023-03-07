@@ -39,7 +39,7 @@ private struct KeyValueStorageServiceKey: ServiceKey {
 public extension Service.Repository {
     var keyValueStorage: KeyValueStorageProtocol {
         get { self[KeyValueStorageServiceKey.self] }
-        set { self[KeyValueStorageServiceKey.self] = newValue }
+        nonmutating set { self[KeyValueStorageServiceKey.self] = newValue }
     }
 }
 

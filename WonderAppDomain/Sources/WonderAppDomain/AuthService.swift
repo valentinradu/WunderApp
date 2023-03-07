@@ -13,7 +13,7 @@ private struct AuthServiceKey: ServiceKey {
 
 public extension Service.Repository {
     var auth: AuthServiceProtocol {
-        set { self[AuthServiceKey.self] = newValue }
+        nonmutating set { self[AuthServiceKey.self] = newValue }
         get { self[AuthServiceKey.self] }
     }
 }

@@ -13,7 +13,7 @@ private struct GuestServiceKey: ServiceKey {
 
 public extension Service.Repository {
     var guest: GuestServiceProtocol {
-        set { self[GuestServiceKey.self] = newValue }
+        nonmutating set { self[GuestServiceKey.self] = newValue }
         get { self[GuestServiceKey.self] }
     }
 }
