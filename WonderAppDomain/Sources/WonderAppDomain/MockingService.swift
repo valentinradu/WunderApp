@@ -34,9 +34,9 @@ public actor MockingService {
         let suppliant = PeerSuppliant<MockingMessage>(targetService: "remote-mocking", password: "unsecurepass")
 
         await suppliant.discover()
-        
+
         _suppliant = suppliant
-        
+
         let connection = try await suppliant.waitForConnection()
         let repository = ServiceRepository()
 
@@ -61,7 +61,7 @@ public actor MockingService {
         await clamant.listen()
         _clamant = clamant
     }
-    
+
     public func cancel() async {
         await _clamant?.cancel()
         await _suppliant?.cancel()
