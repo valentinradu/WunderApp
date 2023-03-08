@@ -31,7 +31,7 @@ private struct OnboardingFragmentView: View {
             case .locateUser:
                 LocateAccountView(viewModel: viewModel)
             case .suggestions:
-                EmptyView()
+                SuggestionsView(viewModel: viewModel)
             }
         }
         .toast($viewModel.toastMessage) { message in

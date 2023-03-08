@@ -13,10 +13,15 @@ public extension UserProfile {
 
 public struct AccountServiceMock: Codable, AccountServiceProtocol {
     public var getUserProfileResult: MockedResult<UserProfile, ServiceError> = .success(value: .mocked, after: 0)
+    public var locateResult: MockedEmptyResult<ServiceError> = .success(after: 0)
 
     public init() {}
 
     public func getUserProfile() async throws -> UserProfile {
         try await getUserProfileResult.unwrap()
+    }
+
+    public func locate() async throws {
+        try await locateResult.unwrap()
     }
 }

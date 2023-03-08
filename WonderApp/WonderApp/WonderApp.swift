@@ -11,21 +11,21 @@ import WonderAppOnboarding
 
 @main
 struct WonderApp: App {
-//    #if TESTING
-    @Service(\.mocking) private var _mockingService
-//    #endif
+    #if TESTING
+        @Service(\.mocking) private var _mockingService
+    #endif
     var body: some Scene {
         WindowGroup {
             let viewModel = OnboardingViewModel()
             OnboardingView(viewModel: viewModel)
                 .task {
-//                    #if TESTING
-                    do {
-                        try await _mockingService.awaitMocks()
-                    } catch {
-                        assertionFailure(error.localizedDescription)
-                    }
-//                    #endif
+                    #if TESTING
+                        do {
+                            try await _mockingService.awaitMocks()
+                        } catch {
+                            assertionFailure(error.localizedDescription)
+                        }
+                    #endif
                 }
         }
     }

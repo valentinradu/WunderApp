@@ -166,6 +166,7 @@ private enum OnboardingViewModelTask {
     case logIn
     case logOut
     case signUp
+    case locateAccount
 }
 
 @MainActor
@@ -194,6 +195,7 @@ public final class OnboardingViewModel: ObservableObject {
     private var _taskPlanner: TaskPlanner<OnboardingViewModelTask> = .init()
     @Service(\.keyValueStorage) private var _keyValueStorage
     @Service(\.auth) private var _authService
+    @Service(\.account) private var _accountService
 
     public init() {}
 
@@ -225,7 +227,11 @@ public final class OnboardingViewModel: ObservableObject {
         case .signUpButton:
             _performSignUp()
         case .locateMeButton:
-            break
+            _taskPlanner.perform(.locateAccount) { [weak self] in
+                guard let self = self else { return }
+                try await self._accountService.locate()
+                self.path.append(.suggestions)
+            }
         case .skipLocateMeButton:
             path.append(.suggestions)
         case .towardsSignUpButton:
@@ -261,8 +267,6 @@ public final class OnboardingViewModel: ObservableObject {
     }
 
     private func _onPersistentFieldChange() {
-        _taskPlanner.cancel(.save)
-
         _taskPlanner.perform(.save) { [weak self] in
             try await Task.sleep(for: .seconds(1))
             try Task.checkCancellation()
@@ -310,6 +314,7 @@ public final class OnboardingViewModel: ObservableObject {
             do {
                 try await _authService.logIn(email: form.email.value,
                                              password: form.email.value)
+                path.append(.locateUser)
             } catch let error as ServiceError {
                 toastMessage = error.localizedDescription
             } catch {
@@ -323,6 +328,7 @@ public final class OnboardingViewModel: ObservableObject {
             do {
                 try await _authService.signUp(fullName: form.fullName.value,
                                               newPassword: form.newPassword.value)
+                path.append(.locateUser)
             } catch let error as ServiceError {
                 toastMessage = error.localizedDescription
             } catch {

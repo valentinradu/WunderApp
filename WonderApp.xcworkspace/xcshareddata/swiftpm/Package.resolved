@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/valentinradu/swift-peer-tunnel.git",
       "state" : {
-        "revision" : "c3b9dc0593730c9a8b9a90d94af6478b207df84b",
-        "version" : "0.0.1"
+        "revision" : "198570f9d39d9d3933c545b21fa912cc61f273ae",
+        "version" : "0.0.2"
       }
     }
   ],

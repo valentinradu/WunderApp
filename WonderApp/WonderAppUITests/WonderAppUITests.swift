@@ -19,7 +19,7 @@ final class WonderAppUITests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        //
+        await _mockingService.cancel()
     }
 
     @MainActor
@@ -30,7 +30,5 @@ final class WonderAppUITests: XCTestCase {
         let accountService = AccountServiceMock()
 
         try await _mockingService.mock(service: .accountService, value: accountService)
-
-        try await Task.sleep(for: .seconds(30))
     }
 }

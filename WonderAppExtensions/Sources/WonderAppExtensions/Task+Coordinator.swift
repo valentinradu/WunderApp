@@ -16,8 +16,14 @@ public class TaskPlanner<N> where N: Hashable {
 
     public func perform(_ name: N, action: @escaping () async throws -> Void) {
         _storage[name]?.cancel()
-        let task = Task {
-            try await action()
+        let task = Task { [weak self] in
+            do {
+                try await action()
+            } catch {
+                self?._storage.removeValue(forKey: name)
+                throw error
+            }
+            self?._storage.removeValue(forKey: name)
         }
         _storage[name] = task
     }

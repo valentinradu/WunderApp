@@ -8,7 +8,7 @@
 import Foundation
 import PeerTunnel
 
-public enum RemoteMockingMessage: UInt32, PeerMessageKindProtocol {
+public enum MockingMessage: UInt32, PeerMessageKindProtocol {
     case accountService
     case authService
     case guestService
@@ -16,23 +16,27 @@ public enum RemoteMockingMessage: UInt32, PeerMessageKindProtocol {
 }
 
 private struct RemoteMockingServiceKey: ServiceKey {
-    static var defaultValue: RemoteMockingService = .init()
+    static var defaultValue: MockingService = .init()
 }
 
 public extension Service.Repository {
-    var mocking: RemoteMockingService {
+    var mocking: MockingService {
         nonmutating set { self[RemoteMockingServiceKey.self] = newValue }
         get { self[RemoteMockingServiceKey.self] }
     }
 }
 
-public actor RemoteMockingService {
-    private var _clamant: PeerClamant<RemoteMockingMessage>?
+public actor MockingService {
+    private var _clamant: PeerClamant<MockingMessage>?
+    private var _suppliant: PeerSuppliant<MockingMessage>?
 
     public func awaitMocks() async throws {
-        let suppliant = PeerSuppliant<RemoteMockingMessage>(targetService: "remote-mocking", password: "unsecurepass")
+        let suppliant = PeerSuppliant<MockingMessage>(targetService: "remote-mocking", password: "unsecurepass")
 
         await suppliant.discover()
+        
+        _suppliant = suppliant
+        
         let connection = try await suppliant.waitForConnection()
         let repository = ServiceRepository()
 
@@ -53,14 +57,17 @@ public actor RemoteMockingService {
     }
 
     public func prepare() async throws {
-        if _clamant == nil {
-            let clamant = try PeerClamant<RemoteMockingMessage>(serviceName: "remote-mocking", password: "unsecurepass")
-            await clamant.listen()
-            _clamant = clamant
-        }
+        let clamant = try PeerClamant<MockingMessage>(serviceName: "remote-mocking", password: "unsecurepass")
+        await clamant.listen()
+        _clamant = clamant
+    }
+    
+    public func cancel() async {
+        await _clamant?.cancel()
+        await _suppliant?.cancel()
     }
 
-    public func mock<V>(service: RemoteMockingMessage, value: V) async throws where V: Codable {
+    public func mock<V>(service: MockingMessage, value: V) async throws where V: Codable {
         guard let clamant = _clamant else {
             assertionFailure()
             return

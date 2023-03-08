@@ -32,10 +32,15 @@ public extension Service.Repository {
 
 public protocol AccountServiceProtocol {
     func getUserProfile() async throws -> UserProfile
+    func locate() async throws
 }
 
 private actor AccountService: AccountServiceProtocol {
     public func getUserProfile() async throws -> UserProfile {
+        fatalError("Not implemented")
+    }
+
+    public func locate() async throws {
         fatalError("Not implemented")
     }
 }
