@@ -10,7 +10,9 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct NewAccountView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
+    @FocusState private var _focus: FormFieldName?
+    @Binding var form: FormViewModel
 
     var body: some View {
         FormContainer {
@@ -18,55 +20,59 @@ struct NewAccountView: View {
                 DoubleHeading(prefix: .l10n.newAccountPrefix,
                               title: .l10n.newAccountTitle)
                 VStack(alignment: .center, spacing: .ds.s1) {
-                    FormField(text: $viewModel.form.fullName.value,
+                    FormField(text: $form.fullName.value,
                               placeholder: .l10n.newAccountFullNamePlaceholder)
-                        .focused($viewModel.form.focus, equals: .fullName)
+                        .focused($form.focus, equals: .fullName)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.words)
-                        .environment(\.controlStatus, viewModel.form.fullName.status)
+                        .environment(\.controlStatus, form.fullName.status)
                         .submitLabel(.next)
-                        .focused($viewModel.form.focus, equals: .fullName)
+                        .focused($form.focus, equals: .fullName)
                         .onSubmit(of: .text) {
-                            viewModel.onSubmit(formFieldName: .fullName)
+                            _focus = .newPassword
                         }
-                    FormField(secureText: $viewModel.form.newPassword.value,
-                              isRevealed: $viewModel.form.newPassword.isRedacted,
+                    FormField(secureText: $form.newPassword.value,
+                              isRevealed: $form.newPassword.isRedacted,
                               placeholder: .l10n.newAccountPasswordPlaceholder)
-                        .focused($viewModel.form.focus, equals: .newPassword)
+                        .focused($form.focus, equals: .newPassword)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.never)
-                        .environment(\.controlStatus, viewModel.form.newPassword.status)
+                        .environment(\.controlStatus, form.newPassword.status)
                         .submitLabel(.join)
-                        .focused($viewModel.form.focus, equals: .newPassword)
+                        .focused($form.focus, equals: .newPassword)
                         .onSubmit(of: .text) {
-                            viewModel.onSubmit(formFieldName: .newPassword)
+                            _onSignUp()
                         }
                 }
                 Spacer()
                 Button {
-                    viewModel.onInteraction(button: .signUpButton)
+                    _onSignUp()
                 } label: {
                     Text(.l10n.newAccountSignUp)
                 }
-                .disabled(!viewModel.form.areSignUpCredentialsValid)
+                .disabled(!form.areSignUpCredentialsValid)
                 Button(role: .cancel) {
-                    viewModel.onInteraction(button: .towardsLogInButton)
+                    _present(FragmentName.newAccount)
                 } label: {
                     Text(.l10n.newAccountLogIn)
                 }
             }
-            .animation(.easeInOut, value: viewModel.form.areSignUpCredentialsValid)
+            .animation(.easeInOut, value: form.areSignUpCredentialsValid)
         }
+    }
+
+    private func _onSignUp() {
+        //
     }
 }
 
 private struct NewAccountViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
+    @State private var _form: FormViewModel = .init()
 
     var body: some View {
-        NewAccountView(viewModel: _model)
+        NewAccountView(form: $_form)
     }
 }
 

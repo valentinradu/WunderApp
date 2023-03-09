@@ -36,6 +36,17 @@ private struct ToastModifier<M, C>: ViewModifier where M: Equatable, C: View {
     }
 }
 
+private struct ShowToastEnvironmentKey: EnvironmentKey {
+    static var defaultValue: (AnyHashable) -> Void = { _ in }
+}
+
+public extension EnvironmentValues {
+    var showToast: (AnyHashable) -> Void {
+        get { self[ShowToastEnvironmentKey.self] }
+        set { self[ShowToastEnvironmentKey.self] = newValue }
+    }
+}
+
 public extension View {
     func toast<M, C>(_ message: Binding<M?>, @ViewBuilder builder: @escaping (M) -> C) -> some View
         where M: Equatable, C: View {

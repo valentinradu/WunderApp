@@ -10,7 +10,8 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct LocateAccountView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
+    @Environment(\.service.account) private var _accountService
 
     var body: some View {
         FormContainer {
@@ -21,26 +22,27 @@ struct LocateAccountView: View {
                     .modifier(InfoParagraphStyle())
                     .frame(greedy: .horizontal, alignment: .leading)
                 Spacer()
-                Button {
-                    viewModel.onInteraction(button: .locateMeButton)
-                } label: {
-                    Text(.l10n.locateAccountLocateMe)
-                }
+                Button(action: _onLocateMe,
+                       label: {
+                           Text(.l10n.locateAccountLocateMe)
+                       })
                 Button(role: .cancel) {
-                    viewModel.onInteraction(button: .skipLocateMeButton)
+                    _present(FragmentName.suggestions)
                 } label: {
                     Text(.l10n.locateAccountLocateLater)
                 }
             }
         }
     }
+
+    private func _onLocateMe() {
+        //
+    }
 }
 
 private struct LocateAccountViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
-
     var body: some View {
-        LocateAccountView(viewModel: _model)
+        LocateAccountView()
     }
 }
 

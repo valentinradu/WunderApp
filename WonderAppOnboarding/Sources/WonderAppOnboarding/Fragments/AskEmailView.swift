@@ -10,42 +10,44 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskEmailView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
+    @FocusState private var _focus: FormFieldName?
+    @Binding var form: FormViewModel
 
     var body: some View {
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askEmailPrefix,
                               title: .l10n.askEmailTitle)
-                FormField(text: $viewModel.form.email.value,
+                FormField(text: $form.email.value,
                           placeholder: .l10n.askEmailPlaceholder)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, viewModel.form.email.status)
-                    .focused($viewModel.form.focus, equals: .email)
+                    .environment(\.controlStatus, form.email.status)
+                    .focused($form.focus, equals: .email)
                     .onSubmit(of: .text) {
-                        viewModel.onSubmit(formFieldName: .email)
+                        _focus = .email
                     }
                 Spacer()
                 Button {
-                    viewModel.onInteraction(button: .towardsSignUpButton)
+                    _present(FragmentName.newAccount)
                 } label: {
                     Text(.l10n.askEmailContinue)
                 }
-                .disabled(!viewModel.form.email.status.isSuccess)
+                .disabled(!form.email.status.isSuccess)
             }
         }
         .submitLabel(.next)
-        .animation(.easeInOut, value: viewModel.form.email.status.isSuccess)
+        .animation(.easeInOut, value: form.email.status.isSuccess)
     }
 }
 
 private struct AskEmailViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
+    @State private var _form: FormViewModel = .init()
 
     var body: some View {
-        AskEmailView(viewModel: _model)
+        AskEmailView(form: $_form)
     }
 }
 

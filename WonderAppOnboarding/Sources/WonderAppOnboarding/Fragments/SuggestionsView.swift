@@ -10,7 +10,7 @@ import SwiftUI
 import WonderAppDesignSystem
 
 struct SuggestionsView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
 
     var body: some View {
         EmptyView()
@@ -18,10 +18,8 @@ struct SuggestionsView: View {
 }
 
 private struct SuggestionsViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
-
     var body: some View {
-        SuggestionsView(viewModel: _model)
+        SuggestionsView()
     }
 }
 

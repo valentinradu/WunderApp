@@ -16,8 +16,7 @@ struct WonderApp: App {
     #endif
     var body: some Scene {
         WindowGroup {
-            let viewModel = OnboardingViewModel()
-            OnboardingView(viewModel: viewModel)
+            OnboardingView()
                 .task {
                     #if TESTING
                         do {

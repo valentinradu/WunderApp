@@ -20,7 +20,8 @@ private struct WelcomeTabItem: View {
 }
 
 struct WelcomeView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
+    @State private var _welcomePage: Int = 0
 
     var body: some View {
         VStack(spacing: .ds.s6) {
@@ -32,18 +33,22 @@ struct WelcomeView: View {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.welcomeLandingGreeting,
                               title: .l10n.welcomeLandingCallout)
-                PaginationCarousel(page: $viewModel.welcomePage) {
+                PaginationCarousel(page: $_welcomePage) {
                     WelcomeTabItem(text: .l10n.welcomeLandingInfoFirst)
                     WelcomeTabItem(text: .l10n.welcomeLandingInfoSecond)
                     WelcomeTabItem(text: .l10n.welcomeLandingInfoThird)
                 }
                 .ignoresSafeArea(.all, edges: .horizontal)
                 .safeAreaInset(edge: .bottom) {
-                    PaginationIndicator(page: viewModel.welcomePage, of: 3)
+                    PaginationIndicator(page: _welcomePage, of: 3)
                 }
-                .animation(.easeInOut, value: viewModel.welcomePage)
+                .animation(.easeInOut, value: _welcomePage)
                 Button {
-                    viewModel.onInteraction(button: .towardsAskEmail)
+                    if _welcomePage < 2 {
+                        _welcomePage += 1
+                    } else {
+                        _present(FragmentName.askEmail)
+                    }
                 }
                     label: {
                     Text(.l10n.welcomeContinue)
@@ -59,10 +64,8 @@ struct WelcomeView: View {
 }
 
 private struct WelcomeViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
-
     var body: some View {
-        WelcomeView(viewModel: _model)
+        WelcomeView()
     }
 }
 

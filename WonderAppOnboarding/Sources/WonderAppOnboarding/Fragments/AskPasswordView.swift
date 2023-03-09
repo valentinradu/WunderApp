@@ -7,47 +7,61 @@
 
 import SwiftUI
 import WonderAppDesignSystem
+import WonderAppDomain
 import WonderAppExtensions
 
 struct AskPasswordView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @Environment(\.present) private var _present
+    @Environment(\.dispatch) private var _dispatch
+    @Environment(\.service.auth) private var _authService
+    @FocusState private var _focus: FormFieldName?
+    @State private var _logInControlStatus: ControlStatus = .idle
+    @Binding var form: FormViewModel
 
     var body: some View {
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askPasswordPrefix,
                               title: .l10n.askPasswordTitle)
-                FormField(secureText: $viewModel.form.password.value,
-                          isRevealed: $viewModel.form.password.isRedacted,
+                FormField(secureText: $form.password.value,
+                          isRevealed: $form.password.isRedacted,
                           placeholder: .l10n.askPasswordPlaceholder)
-                    .focused($viewModel.form.focus, equals: .password)
+                    .focused($form.focus, equals: .password)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, viewModel.form.password.status)
+                    .environment(\.controlStatus, form.password.status)
                 Spacer()
-                Button {
-                    viewModel.onInteraction(button: .logInButton)
-                } label: {
-                    Text(.l10n.askPasswordLogIn)
-                }
-                .disabled(!viewModel.form.areLogInCredentialsValid)
+                Button(action: _onLogIn,
+                       label: {
+                           Text(.l10n.askPasswordLogIn)
+                       })
+                       .disabled(!form.areLogInCredentialsValid)
                 Button(role: .cancel) {
-                    viewModel.onInteraction(button: .towardsSignUpButton)
+                    _present(FragmentName.newAccount)
                 } label: {
                     Text(.l10n.askPasswordSignUp)
                 }
             }
-            .animation(.easeInOut, value: viewModel.form.areLogInCredentialsValid)
+            .animation(.easeInOut, value: form.areLogInCredentialsValid)
+        }
+    }
+
+    private func _onLogIn() {
+        _logInControlStatus = .loading
+        _dispatch(ButtonName.logInButton) {
+            try await _authService.logIn(email: form.email.value,
+                                         password: form.email.value)
+            _present(FragmentName.locateUser)
         }
     }
 }
 
 private struct AskPasswordViewSample: View {
-    @StateObject private var _model: OnboardingViewModel = .init()
+    @State private var _form: FormViewModel = .init()
 
     var body: some View {
-        AskPasswordView(viewModel: _model)
+        AskPasswordView(form: $_form)
     }
 }
 

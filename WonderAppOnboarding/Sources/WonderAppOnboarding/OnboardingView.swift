@@ -7,34 +7,36 @@
 
 import SwiftUI
 import WonderAppDesignSystem
+import WonderAppExtensions
 
 private struct OnboardingFragmentView: View {
-    @ObservedObject var viewModel: OnboardingViewModel
+    @State private var _form: FormViewModel = .init()
+    @State private var _toastMessage: String?
     let fragment: FragmentName
 
     var body: some View {
         Group {
             switch fragment {
             case .main:
-                OnboardingFragmentView(viewModel: viewModel, fragment: .welcome)
+                OnboardingFragmentView(fragment: .welcome)
                     .navigationDestination(for: FragmentName.self) { fragment in
-                        OnboardingFragmentView(viewModel: viewModel, fragment: fragment)
+                        OnboardingFragmentView(fragment: fragment)
                     }
             case .welcome:
-                WelcomeView(viewModel: viewModel)
+                WelcomeView()
             case .askEmail:
-                AskEmailView(viewModel: viewModel)
+                AskEmailView(form: $_form)
             case .askPassword:
-                AskPasswordView(viewModel: viewModel)
+                AskPasswordView(form: $_form)
             case .newAccount:
-                NewAccountView(viewModel: viewModel)
+                NewAccountView(form: $_form)
             case .locateUser:
-                LocateAccountView(viewModel: viewModel)
+                LocateAccountView()
             case .suggestions:
-                SuggestionsView(viewModel: viewModel)
+                SuggestionsView()
             }
         }
-        .toast($viewModel.toastMessage) { message in
+        .toast($_toastMessage) { message in
             Text(verbatim: message)
                 .frame(greedy: .horizontal)
                 .padding(.ds.d1)
@@ -45,41 +47,43 @@ private struct OnboardingFragmentView: View {
                 .foregroundColor(.ds.white)
         }
         .toolbar(.hidden, for: .navigationBar)
-        .task {
-            viewModel.onPostAppear(fragment: fragment)
-        }
     }
 }
 
 public struct OnboardingView: View {
-    @ObservedObject private var _viewModel: OnboardingViewModel
+    @State private var _path: [FragmentName] = []
+    @State private var _isReady: Bool = false
+    @StateObject private var _taskPlanner: TaskPlanner<AnyHashable> = .init()
 
-    public init(viewModel: OnboardingViewModel) {
-        _viewModel = viewModel
-    }
+    public init() {}
 
     public var body: some View {
         Group {
-            if _viewModel.isReady {
-                NavigationStack(path: $_viewModel.path) {
-                    OnboardingFragmentView(viewModel: _viewModel, fragment: .main)
+            if _isReady {
+                NavigationStack(path: $_path) {
+                    OnboardingFragmentView(fragment: .main)
                 }
             }
         }
+        .environment(\.present) {
+            guard let fragment = $0 as? FragmentName else {
+                assertionFailure()
+                return
+            }
+            _path.append(fragment)
+        }
+        .environment(\.dispatch) { name, action in
+            _taskPlanner.perform(name, action: action)
+        }
         .task {
-            await _viewModel.prepare()
+            _isReady = true
         }
     }
 }
 
 private struct OnboardingViewSample: View {
-    @StateObject private var _viewModel: OnboardingViewModel = .init()
-
     var body: some View {
-        OnboardingView(viewModel: _viewModel)
-            .onAppear {
-                _viewModel.toastMessage = .samples.paragraph
-            }
+        OnboardingView()
     }
 }
 
@@ -88,3 +92,39 @@ struct OnboardingViewPreviews: PreviewProvider {
         OnboardingViewSample()
     }
 }
+
+//
+// private func _save() async {
+//    let persistentViewModel = PersistentOnboardingViewModel(email: form.email.value,
+//                                                            fullName: form.fullName.value,
+//                                                            path: path,
+//                                                            welcomePage: welcomePage,
+//                                                            focus: form.focus)
+//    do {
+//        try await _keyValueStorage.create(query: .onboardingViewModel, value: persistentViewModel)
+//    } catch {
+//        assertionFailure()
+//        // TODO: Log
+//    }
+// }
+//
+// private func _attemptToRestore() async {
+//    guard let persistentViewModel = try? await _keyValueStorage.read(query: .onboardingViewModel) else {
+//        return
+//    }
+//
+//    let validator = InputValidator()
+//    form.email = .init(value: persistentViewModel.email,
+//                       status: .idle,
+//                       isRedacted: false,
+//                       validator: validator.validate(email:))
+//    form.fullName = .init(value: persistentViewModel.fullName,
+//                          status: .idle,
+//                          isRedacted: false,
+//                          validator: validator.validate(name:))
+//    form.validate()
+//
+//    path = persistentViewModel.path
+//    welcomePage = persistentViewModel.welcomePage
+//    form.focus = persistentViewModel.focus
+// }

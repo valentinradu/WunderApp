@@ -5,10 +5,24 @@
 //  Created by Valentin Radu on 02/03/2023.
 //
 
-import Foundation
+import SwiftUI
 
-public class TaskPlanner<N> where N: Hashable {
-    private var _storage: [N: Task<Void, Error>]
+public typealias Dispatch = (AnyHashable, @escaping () async throws -> Void) -> Void
+
+private struct DispatchEnvironmentKey: EnvironmentKey {
+    static var defaultValue: Dispatch = { _, _ in }
+}
+
+public extension EnvironmentValues {
+    var dispatch: Dispatch {
+        get { self[DispatchEnvironmentKey.self] }
+        set { self[DispatchEnvironmentKey.self] = newValue }
+    }
+}
+
+public class TaskPlanner<N>: ObservableObject where N: Hashable {
+    private var _storage: [N: Task<Void, Never>]
+    @Published public private(set) var error: Error?
 
     public init() {
         _storage = [:]
@@ -21,7 +35,7 @@ public class TaskPlanner<N> where N: Hashable {
                 try await action()
             } catch {
                 self?._storage.removeValue(forKey: name)
-                throw error
+                self?.error = error
             }
             self?._storage.removeValue(forKey: name)
         }
