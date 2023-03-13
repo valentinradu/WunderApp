@@ -10,41 +10,46 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct AskEmailView: View {
-    @Environment(\.present) private var _present
-    @FocusState private var _focus: FormFieldName?
-    @Binding var form: FormViewModel
+    @Environment(\.navigationContext) private var _navigationContext
+    @Binding var form: FormState
 
     var body: some View {
         FormContainer {
             VStack(alignment: .center, spacing: .ds.s4) {
                 DoubleHeading(prefix: .l10n.askEmailPrefix,
                               title: .l10n.askEmailTitle)
-                FormField(text: $form.email.value,
+                FormField(text: $form.emailField.value,
                           placeholder: .l10n.askEmailPlaceholder)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, form.email.status)
+                    .environment(\.controlStatus, form.emailField.status)
                     .focused($form.focus, equals: .email)
-                    .onSubmit(of: .text) {
-                        _focus = .email
-                    }
+                    .onSubmit(of: .text, _onAttemptAdvance)
                 Spacer()
-                Button {
-                    _present(FragmentName.newAccount)
-                } label: {
-                    Text(.l10n.askEmailContinue)
-                }
-                .disabled(!form.email.status.isSuccess)
+                Button(action: _onAttemptAdvance,
+                       label: {
+                           Text(.l10n.askEmailContinue)
+                       })
+                       .disabled(!form.emailField.status.isSuccess)
             }
         }
         .submitLabel(.next)
-        .animation(.easeInOut, value: form.email.status.isSuccess)
+        .animation(.easeInOut, value: form.emailField.status.isSuccess)
+        .task {
+            form.focus = .email
+        }
+    }
+
+    private func _onAttemptAdvance() {
+        if form.emailField.status.isSuccess {
+            _navigationContext.present(fragment: FragmentName.newAccount)
+        }
     }
 }
 
 private struct AskEmailViewSample: View {
-    @State private var _form: FormViewModel = .init()
+    @State private var _form: FormState = .init()
 
     var body: some View {
         AskEmailView(form: $_form)

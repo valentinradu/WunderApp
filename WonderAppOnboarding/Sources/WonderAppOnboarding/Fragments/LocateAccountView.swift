@@ -7,11 +7,12 @@
 
 import SwiftUI
 import WonderAppDesignSystem
+import WonderAppDomain
 import WonderAppExtensions
 
 struct LocateAccountView: View {
-    @Environment(\.present) private var _present
-    @Environment(\.service.account) private var _accountService
+    @Environment(\.navigationContext) private var _navigationContext
+    @Service(\.account) private var _accountService
 
     var body: some View {
         FormContainer {
@@ -27,7 +28,7 @@ struct LocateAccountView: View {
                            Text(.l10n.locateAccountLocateMe)
                        })
                 Button(role: .cancel) {
-                    _present(FragmentName.suggestions)
+                    _navigationContext.present(fragment: FragmentName.suggestions)
                 } label: {
                     Text(.l10n.locateAccountLocateLater)
                 }

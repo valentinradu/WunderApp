@@ -8,9 +8,10 @@
 import Foundation
 import SwiftUI
 import WonderAppDesignSystem
+import WonderAppExtensions
 
 struct SuggestionsView: View {
-    @Environment(\.present) private var _present
+    @Environment(\.navigationContext) private var _navigationContext
 
     var body: some View {
         EmptyView()

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public enum ControlStatus: Codable, Hashable {
+public enum ControlStatus: Hashable {
     case idle
     case loading
     case failure(message: String? = nil)

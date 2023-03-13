@@ -71,7 +71,7 @@ private struct ToastSample: View {
                     .foregroundColor(.ds.white)
             }
             .onTapGesture {
-                _message = _message == nil ? .samples.paragraph : nil
+                _message = _message.isNil ? .samples.paragraph : nil
             }
     }
 }

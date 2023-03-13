@@ -15,7 +15,7 @@ public enum InputValidatorError: Error {
     case passwordUppercaseFailure
 }
 
-public struct InputValidator {
+public struct FormFieldValidator {
     public init() {}
 
     public func validate(email: String) -> InputValidatorError? {

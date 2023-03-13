@@ -10,9 +10,15 @@ import WonderAppDesignSystem
 import WonderAppExtensions
 
 struct NewAccountView: View {
-    @Environment(\.present) private var _present
-    @FocusState private var _focus: FormFieldName?
-    @Binding var form: FormViewModel
+    private enum FormFieldName {
+        case fullName
+        case newPassword
+    }
+
+    @Environment(\.navigationContext) private var _navigationContext
+    @FocusState private var _focused: FormFieldName?
+    @State private var _isPasswordRedacted: Bool = false
+    @Binding var form: FormState
 
     var body: some View {
         FormContainer {
@@ -20,28 +26,26 @@ struct NewAccountView: View {
                 DoubleHeading(prefix: .l10n.newAccountPrefix,
                               title: .l10n.newAccountTitle)
                 VStack(alignment: .center, spacing: .ds.s1) {
-                    FormField(text: $form.fullName.value,
+                    FormField(text: $form.newPasswordField.value,
                               placeholder: .l10n.newAccountFullNamePlaceholder)
-                        .focused($form.focus, equals: .fullName)
+                        .focused($_focused, equals: .fullName)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.words)
-                        .environment(\.controlStatus, form.fullName.status)
+                        .environment(\.controlStatus, form.fullNameField.status)
                         .submitLabel(.next)
-                        .focused($form.focus, equals: .fullName)
                         .onSubmit(of: .text) {
-                            _focus = .newPassword
+                            _focused = .newPassword
                         }
-                    FormField(secureText: $form.newPassword.value,
-                              isRevealed: $form.newPassword.isRedacted,
+                    FormField(secureText: $form.newPasswordField.value,
+                              isRevealed: $_isPasswordRedacted,
                               placeholder: .l10n.newAccountPasswordPlaceholder)
-                        .focused($form.focus, equals: .newPassword)
+                        .focused($_focused, equals: .newPassword)
                         .autocorrectionDisabled()
                         .keyboardType(.alphabet)
                         .textInputAutocapitalization(.never)
-                        .environment(\.controlStatus, form.newPassword.status)
+                        .environment(\.controlStatus, form.newPasswordField.status)
                         .submitLabel(.join)
-                        .focused($form.focus, equals: .newPassword)
                         .onSubmit(of: .text) {
                             _onSignUp()
                         }
@@ -54,7 +58,7 @@ struct NewAccountView: View {
                 }
                 .disabled(!form.areSignUpCredentialsValid)
                 Button(role: .cancel) {
-                    _present(FragmentName.newAccount)
+                    _navigationContext.present(fragment: FragmentName.newAccount)
                 } label: {
                     Text(.l10n.newAccountLogIn)
                 }
@@ -69,7 +73,7 @@ struct NewAccountView: View {
 }
 
 private struct NewAccountViewSample: View {
-    @State private var _form: FormViewModel = .init()
+    @State private var _form: FormState = .init()
 
     var body: some View {
         NewAccountView(form: $_form)

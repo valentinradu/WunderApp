@@ -20,7 +20,7 @@ private struct WelcomeTabItem: View {
 }
 
 struct WelcomeView: View {
-    @Environment(\.present) private var _present
+    @Environment(\.navigationContext) private var _navigationContext
     @State private var _welcomePage: Int = 0
 
     var body: some View {
@@ -47,7 +47,7 @@ struct WelcomeView: View {
                     if _welcomePage < 2 {
                         _welcomePage += 1
                     } else {
-                        _present(FragmentName.askEmail)
+                        _navigationContext.present(fragment: FragmentName.askEmail)
                     }
                 }
                     label: {

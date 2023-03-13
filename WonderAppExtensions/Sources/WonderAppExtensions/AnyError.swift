@@ -7,9 +7,10 @@
 
 import Foundation
 
-struct AnyError: Error, Hashable {
-    let underlyingError: Error
-    init<E>(_ error: E) where E: Error {
+public struct AnyError: Error, Hashable {
+    public let underlyingError: Error
+
+    fileprivate init<E>(_ error: E) where E: Error {
         if let error = error as? AnyError {
             self = error
         } else {
@@ -17,11 +18,21 @@ struct AnyError: Error, Hashable {
         }
     }
 
-    static func == (lhs: AnyError, rhs: AnyError) -> Bool {
+    public func `as`<E>(_ type: E.Type) -> E? where E: Error {
+        underlyingError as? E
+    }
+
+    public static func == (lhs: AnyError, rhs: AnyError) -> Bool {
         lhs.underlyingError.localizedDescription == rhs.underlyingError.localizedDescription
     }
 
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(underlyingError.localizedDescription)
+    }
+}
+
+public extension Error {
+    var asAnyError: AnyError {
+        AnyError(self)
     }
 }

@@ -11,54 +11,58 @@ import WonderAppDomain
 import WonderAppExtensions
 
 struct AskPasswordView: View {
-    @Environment(\.present) private var _present
-    @Environment(\.dispatch) private var _dispatch
-    @Environment(\.service.auth) private var _authService
-    @FocusState private var _focus: FormFieldName?
-    @State private var _logInControlStatus: ControlStatus = .idle
-    @Binding var form: FormViewModel
+    @Environment(\.navigationContext) private var _navigationContext
+    @Service(\.auth) private var _authService
+    @FocusState private var _focused: Bool
+    @Binding var form: FormState
 
     var body: some View {
         FormContainer {
-            VStack(alignment: .center, spacing: .ds.s4) {
-                DoubleHeading(prefix: .l10n.askPasswordPrefix,
-                              title: .l10n.askPasswordTitle)
-                FormField(secureText: $form.password.value,
-                          isRevealed: $form.password.isRedacted,
-                          placeholder: .l10n.askPasswordPlaceholder)
-                    .focused($form.focus, equals: .password)
-                    .autocorrectionDisabled()
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .environment(\.controlStatus, form.password.status)
-                Spacer()
-                Button(action: _onLogIn,
-                       label: {
-                           Text(.l10n.askPasswordLogIn)
-                       })
-                       .disabled(!form.areLogInCredentialsValid)
-                Button(role: .cancel) {
-                    _present(FragmentName.newAccount)
-                } label: {
-                    Text(.l10n.askPasswordSignUp)
+            AsyncContextReader { asyncContext in
+                VStack(alignment: .center, spacing: .ds.s4) {
+                    DoubleHeading(prefix: .l10n.askPasswordPrefix,
+                                  title: .l10n.askPasswordTitle)
+                    FormField(secureText: $form.passwordField.value,
+                              isRevealed: $form.passwordField.isRedacted,
+                              placeholder: .l10n.askPasswordPlaceholder)
+                        .focused($_focused)
+                        .autocorrectionDisabled()
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .environment(\.controlStatus, form.passwordField.status)
+                    Spacer()
+                    Button(
+                        action: {
+                            asyncContext.performTask(named: TaskName.logIn) {
+                                try await _onLogIn()
+                            }
+                        },
+                        label: {
+                            Text(.l10n.askPasswordLogIn)
+                        }
+                    )
+                    .disabled(!form.areLogInCredentialsValid)
+                    Button(role: .cancel) {
+                        _navigationContext.present(fragment: FragmentName.newAccount)
+                    } label: {
+                        Text(.l10n.askPasswordSignUp)
+                    }
                 }
+                .animation(.easeInOut, value: form.areLogInCredentialsValid)
             }
-            .animation(.easeInOut, value: form.areLogInCredentialsValid)
         }
     }
 
-    private func _onLogIn() {
-        _logInControlStatus = .loading
-        _dispatch(ButtonName.logInButton) {
-            try await _authService.logIn(email: form.email.value,
-                                         password: form.email.value)
-            _present(FragmentName.locateUser)
-        }
+    private func _onLogIn() async throws {
+        form.toNewAccountControl.status = .loading
+        try await _authService.logIn(email: form.emailField.value,
+                                     password: form.passwordField.value)
+        _navigationContext.present(fragment: FragmentName.locateUser)
     }
 }
 
 private struct AskPasswordViewSample: View {
-    @State private var _form: FormViewModel = .init()
+    @State private var _form: FormState = .init()
 
     var body: some View {
         AskPasswordView(form: $_form)

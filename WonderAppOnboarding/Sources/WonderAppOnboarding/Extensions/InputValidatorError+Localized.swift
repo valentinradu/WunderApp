@@ -1,13 +1,13 @@
 //
-//  File.swift
+//  InputValidatorError.swift
+//  WonderApp
 //
-//
-//  Created by Valentin Radu on 11/02/2023.
+//  Created by Valentin Radu on 13/03/2023.
 //
 
 import WonderAppExtensions
 
-extension InputValidatorError {
+public extension InputValidatorError {
     var localizedDescription: String {
         switch self {
         case .invalidEmail:

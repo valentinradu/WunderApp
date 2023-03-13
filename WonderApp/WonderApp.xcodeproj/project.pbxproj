@@ -10,7 +10,10 @@
 		B010620829B78BAC0066E326 /* WonderAppDomain in Frameworks */ = {isa = PBXBuildFile; productRef = B010620729B78BAC0066E326 /* WonderAppDomain */; };
 		B065CD1E29B3FB4500F7E207 /* WonderAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */; };
 		B065CD2729B40F2100F7E207 /* WonderAppExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = B065CD2629B40F2100F7E207 /* WonderAppExtensions */; };
+		B073517329BFD4B900E5310C /* ServiceError+Localized.swift in Sources */ = {isa = PBXBuildFile; fileRef = B073517229BFD4B900E5310C /* ServiceError+Localized.swift */; };
 		B08E014B29A277D1004A3C9F /* WonderAppOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = B08E014A29A277D1004A3C9F /* WonderAppOnboarding */; };
+		B0B13DDD29BFA72900C42831 /* WonderAppDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = B0B13DDC29BFA72900C42831 /* WonderAppDesignSystem */; };
+		B0B13DDF29BFA72D00C42831 /* WonderAppExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = B0B13DDE29BFA72D00C42831 /* WonderAppExtensions */; };
 		B0C410A0297B65E9001B694C /* WonderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C4109F297B65E9001B694C /* WonderApp.swift */; };
 		B0C410A4297B65EA001B694C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A3297B65EA001B694C /* Assets.xcassets */; };
 		B0C410A7297B65EA001B694C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0C410A6297B65EA001B694C /* Preview Assets.xcassets */; };
@@ -30,6 +33,7 @@
 		B05CEFA729ACF3110058916B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B065CD1B29B3FB4500F7E207 /* WonderAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WonderAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WonderAppUITests.swift; sourceTree = "<group>"; };
+		B073517229BFD4B900E5310C /* ServiceError+Localized.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ServiceError+Localized.swift"; sourceTree = "<group>"; };
 		B0C4109C297B65E9001B694C /* WonderApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WonderApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0C4109F297B65E9001B694C /* WonderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WonderApp.swift; sourceTree = "<group>"; };
 		B0C410A3297B65EA001B694C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -50,6 +54,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0B13DDF29BFA72D00C42831 /* WonderAppExtensions in Frameworks */,
+				B0B13DDD29BFA72900C42831 /* WonderAppDesignSystem in Frameworks */,
 				B08E014B29A277D1004A3C9F /* WonderAppOnboarding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -70,6 +76,14 @@
 				B065CD1D29B3FB4500F7E207 /* WonderAppUITests.swift */,
 			);
 			path = WonderAppUITests;
+			sourceTree = "<group>";
+		};
+		B0B13DE329BFA7CB00C42831 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				B073517229BFD4B900E5310C /* ServiceError+Localized.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		B0C41093297B65E9001B694C = {
@@ -95,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				B05CEFA729ACF3110058916B /* Info.plist */,
+				B0B13DE329BFA7CB00C42831 /* Extensions */,
 				B0C4109F297B65E9001B694C /* WonderApp.swift */,
 				B0C410A3297B65EA001B694C /* Assets.xcassets */,
 				B0C410A5297B65EA001B694C /* Preview Content */,
@@ -150,6 +165,8 @@
 			name = WonderApp;
 			packageProductDependencies = (
 				B08E014A29A277D1004A3C9F /* WonderAppOnboarding */,
+				B0B13DDC29BFA72900C42831 /* WonderAppDesignSystem */,
+				B0B13DDE29BFA72D00C42831 /* WonderAppExtensions */,
 			);
 			productName = WonderApp;
 			productReference = B0C4109C297B65E9001B694C /* WonderApp.app */;
@@ -226,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B0C410A0297B65E9001B694C /* WonderApp.swift in Sources */,
+				B073517329BFD4B900E5310C /* ServiceError+Localized.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,7 +330,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WonderApp/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "WonderApp uses the local network for debugging";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -324,7 +342,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-D TESTING";
-				PRODUCT_BUNDLE_IDENTIFIER = com.WonderApp.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderapp.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -511,7 +529,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WonderApp/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "WonderApp uses the local network for debugging";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -522,7 +540,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.WonderApp.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderapp.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -542,7 +560,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WonderApp/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "WonderApp uses the local network for debugging";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -553,7 +571,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.WonderApp.demo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderapp.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -608,6 +626,14 @@
 		B08E014A29A277D1004A3C9F /* WonderAppOnboarding */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WonderAppOnboarding;
+		};
+		B0B13DDC29BFA72900C42831 /* WonderAppDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WonderAppDesignSystem;
+		};
+		B0B13DDE29BFA72D00C42831 /* WonderAppExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WonderAppExtensions;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

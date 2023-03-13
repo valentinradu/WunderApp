@@ -10,6 +10,13 @@ import SwiftUI
 import WonderAppDomain
 import WonderAppExtensions
 
+enum TaskName {
+    case saveState
+    case restoreState
+    case logIn
+    case signUp
+}
+
 enum FragmentName: Codable, Hashable {
     case main
     case welcome
@@ -20,73 +27,19 @@ enum FragmentName: Codable, Hashable {
     case suggestions
 }
 
-enum FormFieldName: Codable, Hashable, CaseIterable {
+enum FormFieldName: Codable, Hashable {
     case email
     case fullName
     case password
     case newPassword
 }
 
-enum ButtonName {
-    case towardsAskEmail
-    case towardsAskPassword
-    case logInButton
-    case signUpButton
-    case locateMeButton
-    case skipLocateMeButton
-    case towardsSignUpButton
-    case towardsLogInButton
-}
-
-struct FormFieldViewModel {
-    var value: String {
-        didSet {
-            validateContinuously()
-        }
-    }
-
-    var status: ControlStatus
-    var isRedacted: Bool
-    fileprivate var validator: (String) -> InputValidatorError?
-
-    init(
-        value: String = "",
-        status: ControlStatus = .idle,
-        isRedacted: Bool = false,
-        validator: @escaping (String) -> InputValidatorError? = { _ in nil }
-    ) {
-        self.value = value
-        self.status = status
-        self.isRedacted = isRedacted
-        self.validator = validator
-    }
-
-    mutating func validate() {
-        guard !value.isEmpty else { return }
-        if let error = validator(value) {
-            status = .failure(message: error.localizedDescription)
-        } else {
-            status = .success()
-        }
-    }
-
-    private mutating func validateContinuously() {
-        let error = validator(value)
-        if let error {
-            if status != .idle {
-                status = .failure(message: error.localizedDescription)
-            }
-        } else {
-            status = .success()
-        }
-    }
-}
-
-struct FormViewModel {
-    var email: FormFieldViewModel
-    var fullName: FormFieldViewModel
-    var password: FormFieldViewModel
-    var newPassword: FormFieldViewModel
+struct FormState: Hashable {
+    var emailField: FormFieldModel
+    var fullNameField: FormFieldModel
+    var passwordField: FormFieldModel
+    var newPasswordField: FormFieldModel
+    var toNewAccountControl: FormControlModel
     var focus: FormFieldName? {
         didSet {
             if let oldValue, oldValue != focus {
@@ -98,65 +51,86 @@ struct FormViewModel {
         }
     }
 
-    init(email: FormFieldViewModel = .init(),
-         fullName: FormFieldViewModel = .init(),
-         password: FormFieldViewModel = .init(),
-         newPassword: FormFieldViewModel = .init(),
+    init(emailField: FormFieldModel = .init(),
+         fullNameField: FormFieldModel = .init(),
+         passwordField: FormFieldModel = .init(),
+         newPasswordField: FormFieldModel = .init(),
+         toNewAccountControl: FormControlModel = .init(),
          focus: FormFieldName? = nil) {
-        self.email = email
-        self.fullName = fullName
-        self.password = password
-        self.newPassword = newPassword
+        self.emailField = emailField
+        self.fullNameField = fullNameField
+        self.passwordField = passwordField
+        self.newPasswordField = newPasswordField
+        self.toNewAccountControl = toNewAccountControl
         self.focus = focus
 
-        let inputValidator = InputValidator()
-        self.email.validator = inputValidator.validate(email:)
-        self.fullName.validator = inputValidator.validate(name:)
-        self.newPassword.validator = inputValidator.validate(password:)
+        let formFieldValidator = FormFieldValidator()
+        self.emailField.validator = formFieldValidator.validate(email:)
+        self.fullNameField.validator = formFieldValidator.validate(name:)
+        self.newPasswordField.validator = formFieldValidator.validate(password:)
     }
 
-    func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldViewModel> {
+    func keyPath(for fieldName: FormFieldName) -> WritableKeyPath<Self, FormFieldModel> {
         switch fieldName {
         case .email:
-            return \.email
+            return \.emailField
         case .fullName:
-            return \.fullName
+            return \.fullNameField
         case .password:
-            return \.password
+            return \.passwordField
         case .newPassword:
-            return \.newPassword
+            return \.newPasswordField
         }
     }
 
     var areLogInCredentialsValid: Bool {
-        email.status.isSuccess && !password.value.isEmpty
+        emailField.status.isSuccess && !passwordField.value.isEmpty
     }
 
     var areSignUpCredentialsValid: Bool {
-        fullName.status.isSuccess && newPassword.status.isSuccess
+        fullNameField.status.isSuccess && newPasswordField.status.isSuccess
     }
 
-    fileprivate mutating func validate() {
-        email.validate()
-        fullName.validate()
-        newPassword.validate()
+    mutating func validate() {
+        emailField.validate()
+        fullNameField.validate()
+        newPasswordField.validate()
     }
 }
 
-struct PersistentOnboardingViewModel: Codable, Sendable, Hashable {
-    let email: String
-    let fullName: String
-    let path: [FragmentName]
-    let welcomePage: Int
-    let focus: FormFieldName?
-}
+extension FormState: Codable {
+    enum CodingKeys: CodingKey {
+        case email
+        case password
+        case newPassword
+        case fullName
+    }
 
-private struct OnboardingViewModelStorageQuery: KeyValueStorageQuery {
-    typealias Value = PersistentOnboardingViewModel
-    private(set) var trait: KeyValueStorageQueryTrait = .heavyweight
-    private(set) var key: String = "Onboarding.viewmodel"
-}
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let email = try container.decode(String.self, forKey: .email)
+        let password = try container.decode(String.self, forKey: .password)
+        let newPassword = try container.decode(String.self, forKey: .newPassword)
+        let fullName = try container.decode(String.self, forKey: .fullName)
 
-private extension KeyValueStorageQuery where Self == OnboardingViewModelStorageQuery {
-    static var onboardingViewModel: OnboardingViewModelStorageQuery { OnboardingViewModelStorageQuery() }
+        let emailField = FormFieldModel(value: email)
+        let fullNameField = FormFieldModel(value: fullName)
+        let passwordField = FormFieldModel(value: password)
+        let newPasswordField = FormFieldModel(value: newPassword)
+
+        self = FormState(emailField: emailField,
+                         fullNameField: fullNameField,
+                         passwordField: passwordField,
+                         newPasswordField: newPasswordField)
+        validate()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(emailField.value, forKey: .email)
+        try container.encode(passwordField.value, forKey: .password)
+        try container.encode(newPasswordField.value, forKey: .newPassword)
+        try container.encode(fullNameField.value, forKey: .fullName)
+    }
 }
